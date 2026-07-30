@@ -1,0 +1,39 @@
+import { Link } from "react-router-dom";
+import { AtSign } from "lucide-react";
+import { ROUTES } from "@/constants/routes";
+import { initials } from "@/utils/format";
+import type { EmployeeTeamOut } from "@/types/employee";
+
+export function EmployeeCard({ employee }: { employee: EmployeeTeamOut }) {
+  const name = [employee.first_name, employee.last_name].filter(Boolean).join(" ") || "Profissional";
+  return (
+    <Link
+      to={ROUTES.teamDetail(employee.id)}
+      className="group block overflow-hidden rounded-card border border-ink-700 bg-ink-800/70 transition-all hover:border-gold-400/50"
+    >
+      <div className="aspect-square overflow-hidden bg-ink-700">
+        {employee.photo_url ? (
+          <img
+            src={employee.photo_url}
+            alt={name}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center font-display text-4xl text-gold-400">
+            {initials(employee.first_name, employee.last_name)}
+          </div>
+        )}
+      </div>
+      <div className="p-4">
+        <h3 className="font-display text-sm uppercase tracking-wide text-bone-50">{name}</h3>
+        {employee.bio && <p className="mt-1 line-clamp-2 text-xs text-bone-500">{employee.bio}</p>}
+        {employee.instagram && (
+          <span className="mt-2 flex items-center gap-1 text-xs text-gold-400">
+            <AtSign className="h-3 w-3" /> {employee.instagram}
+          </span>
+        )}
+      </div>
+    </Link>
+  );
+}

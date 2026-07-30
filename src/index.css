@@ -1,0 +1,89 @@
+@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@1,500&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-ink-950: #0a0a0b;
+  --color-ink-900: #0f0f11;
+  --color-ink-800: #17171a;
+  --color-ink-700: #202023;
+  --color-ink-600: #2b2b2f;
+  --color-ink-500: #3a3a40;
+
+  --color-bone-50: #faf9f7;
+  --color-bone-100: #f2f0ec;
+  --color-bone-300: #cfccc5;
+  --color-bone-500: #8f8c86;
+  --color-bone-600: #6b6862;
+
+  --color-crimson-400: #e23a52;
+  --color-crimson-500: #c6172e;
+  --color-crimson-600: #a10f24;
+  --color-crimson-700: #7c0b1c;
+
+  --color-gold-300: #e6c98a;
+  --color-gold-400: #d4af6a;
+  --color-gold-500: #b8923f;
+  --color-gold-600: #8f7130;
+
+  --color-success-500: #2f9e5c;
+  --color-danger-500: #dc3545;
+  --color-warning-500: #d4a018;
+
+  --font-display: "Oswald", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-accent: "Cormorant Garamond", ui-serif, serif;
+
+  --radius-card: 0.625rem;
+  --shadow-elevated: 0 20px 50px -20px rgb(0 0 0 / 0.65);
+}
+
+@layer base {
+  html { color-scheme: dark; }
+
+  body {
+    @apply bg-ink-950 text-bone-100 font-body antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgb(198 23 46 / 0.08), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, rgb(212 175 106 / 0.05), transparent);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4 { @apply font-display uppercase tracking-wide text-bone-50; }
+
+  ::selection { @apply bg-crimson-500 text-bone-50; }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold-400);
+    outline-offset: 2px;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--color-ink-900); }
+  ::-webkit-scrollbar-thumb { background: var(--color-ink-600); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-ink-500); }
+}
+
+@layer utilities {
+  .text-accent-script {
+    font-family: var(--font-accent);
+    font-style: italic;
+    color: var(--color-gold-400);
+  }
+
+  .razor-line {
+    position: relative;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-crimson-500), var(--color-gold-400) 60%, transparent);
+    transform-origin: left;
+    animation: razor-draw 900ms cubic-bezier(0.65, 0, 0.35, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .razor-line { animation: none; }
+  }
+}
+
+@keyframes razor-draw {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}

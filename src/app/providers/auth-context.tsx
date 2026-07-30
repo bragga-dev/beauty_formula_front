@@ -1,0 +1,97 @@
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { authService } from "@/services/auth.service";
+import { tokenStorage } from "@/utils/token-storage";
+import type { MeOut } from "@/types/user";
+
+interface AuthContextValue {
+  me: MeOut | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<MeOut>;
+  loginWithGoogle: (idToken: string) => Promise<MeOut>;
+  register: (email: string, password: string, password2: string) => Promise<MeOut>;
+  logout: () => Promise<void>;
+  refreshMe: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [me, setMe] = useState<MeOut | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const refreshMe = useCallback(async () => {
+    if (!tokenStorage.getAccess()) {
+      setMe(null);
+      return;
+    }
+    try {
+      const profile = await authService.me();
+      setMe(profile);
+    } catch {
+      tokenStorage.clear();
+      setMe(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshMe().finally(() => setIsLoading(false));
+  }, [refreshMe]);
+
+  const login = useCallback(async (email: string, password: string) => {
+    const tokens = await authService.login(email, password);
+    tokenStorage.setTokens(tokens.access, tokens.refresh);
+    const profile = await authService.me();
+    setMe(profile);
+    return profile;
+  }, []);
+
+  const loginWithGoogle = useCallback(async (idToken: string) => {
+    const tokens = await authService.loginWithGoogle(idToken);
+    tokenStorage.setTokens(tokens.access, tokens.refresh);
+    const profile = await authService.me();
+    setMe(profile);
+    return profile;
+  }, []);
+
+  const register = useCallback(async (email: string, password: string, password2: string) => {
+    const tokens = await authService.register({ email, password, password2 });
+    tokenStorage.setTokens(tokens.access, tokens.refresh);
+    const profile = await authService.me();
+    setMe(profile);
+    return profile;
+  }, []);
+
+  const logout = useCallback(async () => {
+    const refresh = tokenStorage.getRefresh();
+    try {
+      if (refresh) await authService.logout(refresh);
+    } finally {
+      tokenStorage.clear();
+      setMe(null);
+    }
+  }, []);
+
+  return (
+    <AuthContext.Provider
+      value={{
+        me,
+        isLoading,
+        isAuthenticated: !!me,
+        login,
+        loginWithGoogle,
+        register,
+        logout,
+        refreshMe,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth deve ser usado dentro de <AuthProvider>");
+  return ctx;
+}
