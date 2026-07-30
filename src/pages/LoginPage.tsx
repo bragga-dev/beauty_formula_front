@@ -2,6 +2,8 @@ import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
 import { AuthLayout } from "@/features/auth/AuthLayout";
+import { AuthDivider } from "@/features/auth/AuthDivider";
+import { GoogleAuthButton } from "@/features/auth/GoogleAuthButton";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/app/providers/auth-context";
@@ -10,7 +12,7 @@ import { ROUTES } from "@/constants/routes";
 import type { ApiError } from "@/types/common";
 
 export function LoginPage() {
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const { push } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -18,7 +20,13 @@ export function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function goToDestination() {
+    const from = (location.state as { from?: Location })?.from?.pathname ?? ROUTES.dashboard;
+    navigate(from, { replace: true });
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -27,12 +35,25 @@ export function LoginPage() {
     try {
       await login(email, password);
       push("Login realizado com sucesso!", "success");
-      const from = (location.state as { from?: Location })?.from?.pathname ?? ROUTES.dashboard;
-      navigate(from, { replace: true });
+      goToDestination();
     } catch (err) {
       setError((err as ApiError).detail as string);
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleGoogleCredential(idToken: string) {
+    setError(null);
+    setIsGoogleLoading(true);
+    try {
+      await loginWithGoogle(idToken);
+      push("Login realizado com sucesso!", "success");
+      goToDestination();
+    } catch (err) {
+      setError((err as ApiError).detail as string);
+    } finally {
+      setIsGoogleLoading(false);
     }
   }
 
@@ -80,10 +101,19 @@ export function LoginPage() {
             Esqueci minha senha
           </Link>
         </div>
-        <Button type="submit" fullWidth size="lg" isLoading={isLoading}>
+        <Button type="submit" fullWidth size="lg" isLoading={isLoading} disabled={isGoogleLoading}>
           Entrar
         </Button>
       </form>
+
+      <AuthDivider />
+
+      <GoogleAuthButton
+        text="signin_with"
+        disabled={isLoading || isGoogleLoading}
+        onCredential={handleGoogleCredential}
+        onError={(message) => setError(message)}
+      />
     </AuthLayout>
   );
 }

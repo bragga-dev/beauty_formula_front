@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Camera, Save } from "lucide-react";
+import { Camera, KeyRound, Save } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -10,12 +10,14 @@ import { useAuth } from "@/app/providers/auth-context";
 import { useToast } from "@/app/providers/toast-context";
 import { profileService } from "@/services/profile.service";
 import { initials } from "@/utils/format";
+import { ChangePasswordModal } from "@/features/profile/ChangePasswordModal";
 import type { ApiError } from "@/types/common";
 
 export function ProfilePage() {
   const { me, refreshMe } = useAuth();
   const { push } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   const isEmployee = me?.user.role === "employee";
   const profile = me?.client ?? me?.employee;
@@ -187,6 +189,23 @@ export function ProfilePage() {
           </form>
         </CardBody>
       </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <h2 className="font-display text-sm uppercase tracking-wide text-bone-50">Segurança</h2>
+        </CardHeader>
+        <CardBody className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-sm text-bone-100">Senha de acesso</p>
+            <p className="text-xs text-bone-500">Altere sua senha periodicamente para manter sua conta segura.</p>
+          </div>
+          <Button type="button" variant="secondary" onClick={() => setIsChangePasswordOpen(true)}>
+            <KeyRound className="h-4 w-4" /> Alterar senha
+          </Button>
+        </CardBody>
+      </Card>
+
+      <ChangePasswordModal open={isChangePasswordOpen} onClose={() => setIsChangePasswordOpen(false)} />
     </div>
   );
 }

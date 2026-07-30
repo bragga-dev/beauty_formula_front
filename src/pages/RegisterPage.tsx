@@ -2,6 +2,8 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
 import { AuthLayout } from "@/features/auth/AuthLayout";
+import { AuthDivider } from "@/features/auth/AuthDivider";
+import { GoogleAuthButton } from "@/features/auth/GoogleAuthButton";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/app/providers/auth-context";
@@ -10,7 +12,7 @@ import { ROUTES } from "@/constants/routes";
 import type { ApiError } from "@/types/common";
 
 export function RegisterPage() {
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const { push } = useToast();
   const navigate = useNavigate();
 
@@ -18,6 +20,7 @@ export function RegisterPage() {
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent) {
@@ -38,6 +41,20 @@ export function RegisterPage() {
       setError((err as ApiError).detail as string);
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleGoogleCredential(idToken: string) {
+    setError(null);
+    setIsGoogleLoading(true);
+    try {
+      await loginWithGoogle(idToken);
+      push("Conta criada com sucesso!", "success");
+      navigate(ROUTES.dashboard, { replace: true });
+    } catch (err) {
+      setError((err as ApiError).detail as string);
+    } finally {
+      setIsGoogleLoading(false);
     }
   }
 
@@ -93,13 +110,22 @@ export function RegisterPage() {
           minLength={8}
           autoComplete="new-password"
         />
-        <Button type="submit" fullWidth size="lg" isLoading={isLoading}>
+        <Button type="submit" fullWidth size="lg" isLoading={isLoading} disabled={isGoogleLoading}>
           Cadastrar
         </Button>
         <p className="text-center text-xs text-bone-600">
           Ao cadastrar-se, você concorda com nossos Termos de Uso e Política de Privacidade.
         </p>
       </form>
+
+      <AuthDivider />
+
+      <GoogleAuthButton
+        text="signup_with"
+        disabled={isLoading || isGoogleLoading}
+        onCredential={handleGoogleCredential}
+        onError={(message) => setError(message)}
+      />
     </AuthLayout>
   );
 }
