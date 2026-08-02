@@ -14,7 +14,7 @@ import { ChangePasswordModal } from "@/features/profile/ChangePasswordModal";
 import type { ApiError } from "@/types/common";
 
 export function ProfilePage() {
-  const { me, refreshMe } = useAuth();
+  const { me, updateProfile } = useAuth();
   const { push } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
@@ -63,11 +63,12 @@ export function ProfilePage() {
         gender: form.gender,
       };
       if (isEmployee) {
-        await profileService.updateEmployee({ ...payload, bio: form.bio });
+        const updated = await profileService.updateEmployee({ ...payload, bio: form.bio });
+        updateProfile(updated);
       } else {
-        await profileService.updateClient(payload);
+        const updated = await profileService.updateClient(payload);
+        updateProfile(updated);
       }
-      await refreshMe();
       push("Perfil atualizado com sucesso!", "success");
     } catch (err) {
       push((err as ApiError).detail as string, "error");
@@ -82,11 +83,12 @@ export function ProfilePage() {
     setIsUploadingPhoto(true);
     try {
       if (isEmployee) {
-        await profileService.uploadEmployeePhoto(file);
+        const updated = await profileService.uploadEmployeePhoto(file);
+        updateProfile(updated);
       } else {
-        await profileService.uploadClientPhoto(file);
+        const updated = await profileService.uploadClientPhoto(file);
+        updateProfile(updated);
       }
-      await refreshMe();
       push("Foto atualizada!", "success");
     } catch (err) {
       push((err as ApiError).detail as string, "error");

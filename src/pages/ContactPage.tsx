@@ -65,14 +65,14 @@ export function ContactPage() {
             <MapPin className="h-5 w-5 shrink-0 text-gold-400" />
             <div>
               <p className="text-sm text-bone-100">Endereço</p>
-              <p className="text-sm text-bone-500">Rua das Palmeiras, 123 — Centro, São Paulo/SP</p>
+              <p className="text-sm text-bone-500">Av. Franz Gedeon, Centro —  Praça da Bandeira — Jequié / Ba</p>
             </div>
           </div>
           <div className="flex items-start gap-3 rounded-card border border-ink-700 bg-ink-800/60 p-4">
             <Clock className="h-5 w-5 shrink-0 text-gold-400" />
             <div>
               <p className="text-sm text-bone-100">Horário</p>
-              <p className="text-sm text-bone-500">Seg a Sex: 09h–20h · Sáb: 09h–18h · Dom: Fechado</p>
+              <p className="text-sm text-bone-500">Seg a Sáb: 08h–19h </p>
             </div>
           </div>
         </div>

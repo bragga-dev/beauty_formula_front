@@ -8,3 +8,13 @@ export function useAvailability(employeeId?: string, serviceId?: string, date?: 
     enabled: !!employeeId && !!serviceId && !!date,
   });
 }
+
+// Etapa "Profissional": só profissionais que atendem o serviço E têm
+// vaga real na janela de agendamento — não só quem está vinculado.
+export function useEligibleEmployees(serviceId?: string) {
+  return useQuery({
+    queryKey: ["availability", "eligible-employees", serviceId],
+    queryFn: () => availabilityService.getEligibleEmployees(serviceId as string),
+    enabled: !!serviceId,
+  });
+}

@@ -17,7 +17,7 @@ import type { ApiError } from "@/types/common";
 export function DashboardServicesPage() {
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, refetch } = useAdminServices(page);
-  const { create, update, remove, activate, deactivate } = useServiceMutations();
+  const { create, update, updateImage, remove, activate, deactivate } = useServiceMutations();
   const { push } = useToast();
 
   const [formOpen, setFormOpen] = useState(false);
@@ -38,6 +38,9 @@ export function DashboardServicesPage() {
     try {
       if (editingService) {
         await update.mutateAsync({ id: editingService.id, payload });
+        if (image) {
+          await updateImage.mutateAsync({ id: editingService.id, image });
+        }
       } else {
         await create.mutateAsync({ payload, image });
       }
@@ -154,7 +157,7 @@ export function DashboardServicesPage() {
         onClose={() => setFormOpen(false)}
         onSubmit={handleFormSubmit}
         service={editingService}
-        isSubmitting={create.isPending || update.isPending}
+        isSubmitting={create.isPending || update.isPending || updateImage.isPending}
       />
 
       <ConfirmDialog

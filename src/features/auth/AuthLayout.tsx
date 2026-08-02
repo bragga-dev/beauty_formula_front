@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Logo } from "@/components/ui/Logo";
 import { Scissors } from "lucide-react";
+import authHeroImage from "@/assets/auth-hero.jpg";
 
 interface AuthLayoutProps {
   title: string;
@@ -13,7 +14,18 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="relative hidden flex-col justify-between overflow-hidden bg-ink-900 p-12 lg:flex">
-        <div className="absolute inset-0 bg-gradient-to-br from-crimson-900/20 via-transparent to-gold-500/10" />
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${authHeroImage})` }}
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-ink-950/55" aria-hidden="true" />
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/40 to-ink-950/70"
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-crimson-900/25 via-transparent to-gold-500/10" aria-hidden="true" />
+
         <Logo className="relative z-10" />
         <div className="relative z-10">
           <Scissors className="h-12 w-12 text-crimson-500" strokeWidth={1.2} />

@@ -35,9 +35,7 @@ export function PublicFooter() {
         <div>
           <h4 className="text-xs uppercase tracking-widest text-gold-400">Horário</h4>
           <ul className="mt-4 space-y-2 text-sm text-bone-400">
-            <li className="flex items-center gap-2"><Clock className="h-4 w-4 text-bone-600" /> Seg a Sex: 09h às 20h</li>
-            <li className="flex items-center gap-2 pl-6">Sáb: 09h às 18h</li>
-            <li className="flex items-center gap-2 pl-6">Dom: Fechado</li>
+            <li className="flex items-center gap-2"><Clock className="h-4 w-4 text-bone-600" /> Seg a Sáb: 08h às 19h</li>
           </ul>
         </div>
 
@@ -45,7 +43,7 @@ export function PublicFooter() {
           <h4 className="text-xs uppercase tracking-widest text-gold-400">Contato</h4>
           <ul className="mt-4 space-y-2 text-sm text-bone-400">
             <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-bone-600" /> (11) 99999-9999</li>
-            <li className="flex items-center gap-2"><MapPin className="h-4 w-4 text-bone-600" /> Rua das Palmeiras, 123 — Centro</li>
+            <li className="flex items-center gap-2"><MapPin className="h-4 w-4 text-bone-600" /> Av. Franz Gedeon, Centro —  Praça da Bandeira</li>
           </ul>
         </div>
       </div>

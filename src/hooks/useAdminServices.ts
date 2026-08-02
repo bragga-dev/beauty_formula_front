@@ -25,6 +25,12 @@ export function useServiceMutations() {
     onSuccess: invalidate,
   });
 
+  const updateImage = useMutation({
+    mutationFn: ({ id, image }: { id: string; image: File }) =>
+      servicesService.updateImage(id, image),
+    onSuccess: invalidate,
+  });
+
   const remove = useMutation({
     mutationFn: (id: string) => servicesService.remove(id),
     onSuccess: invalidate,
@@ -40,5 +46,5 @@ export function useServiceMutations() {
     onSuccess: invalidate,
   });
 
-  return { create, update, remove, activate, deactivate };
+  return { create, update, updateImage, remove, activate, deactivate };
 }

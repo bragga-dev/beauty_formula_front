@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { authService } from "@/services/auth.service";
 import { tokenStorage } from "@/utils/token-storage";
-import type { MeOut } from "@/types/user";
+import type { ClientProfile, EmployeeProfile, MeOut } from "@/types/user";
 
 interface AuthContextValue {
   me: MeOut | null;
@@ -12,6 +12,11 @@ interface AuthContextValue {
   register: (email: string, password: string, password2: string) => Promise<MeOut>;
   logout: () => Promise<void>;
   refreshMe: () => Promise<void>;
+  /**
+   * Atualiza `me.client`/`me.employee` localmente com o objeto já retornado
+   * por um endpoint de update/upload, sem disparar um novo GET /auth/me.
+   */
+  updateProfile: (profile: ClientProfile | EmployeeProfile) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -62,6 +67,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return profile;
   }, []);
 
+  const updateProfile = useCallback((profile: ClientProfile | EmployeeProfile) => {
+    setMe((prev) => {
+      if (!prev) return prev;
+      if (prev.user.role === "employee") {
+        return { ...prev, employee: profile as EmployeeProfile };
+      }
+      return { ...prev, client: profile as ClientProfile };
+    });
+  }, []);
+
   const logout = useCallback(async () => {
     const refresh = tokenStorage.getRefresh();
     try {
@@ -83,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         refreshMe,
+        updateProfile,
       }}
     >
       {children}

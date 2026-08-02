@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { CalendarClock, ShieldCheck, Sparkles, Users, ArrowRight, Scissors } from "lucide-react";
 import { ButtonLink } from "@/components/ui/ButtonLink";
+import { Carousel } from "@/components/ui/Carousel";
 import { ServiceCard } from "@/features/services/ServiceCard";
 import { ServiceCardSkeleton } from "@/features/services/ServiceCardSkeleton";
 import { EmployeeCard } from "@/features/team/EmployeeCard";
@@ -8,6 +9,7 @@ import { ErrorState } from "@/components/feedback/ErrorState";
 import { usePublicServices } from "@/hooks/useServices";
 import { useTeam } from "@/hooks/useTeam";
 import { ROUTES } from "@/constants/routes";
+import heroImage from "@/assets/home-salom.jpg";
 
 const FEATURES = [
   { icon: ShieldCheck, title: "Atendimento Premium", desc: "Experiência feita para você, do início ao fim." },
@@ -18,15 +20,26 @@ const FEATURES = [
 
 export function HomePage() {
   const { data: servicesPage, isLoading: loadingServices, isError: servicesError, refetch: refetchServices } =
-    usePublicServices(1, 6);
-  const { data: teamPage, isLoading: loadingTeam, isError: teamError, refetch: refetchTeam } = useTeam(1, 4);
+    usePublicServices(1, 10);
+  const { data: teamPage, isLoading: loadingTeam, isError: teamError, refetch: refetchTeam } = useTeam(1, 8);
 
   return (
     <div>
       {/* ── Hero ── */}
       <section className="relative overflow-hidden border-b border-ink-700">
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:py-28 lg:px-8">
-          <div>
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${heroImage})` }}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/85 to-ink-950/30"
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-transparent to-transparent" aria-hidden="true" />
+
+        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-32 lg:px-8">
+          <div className="max-w-xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/30 bg-gold-400/5 px-4 py-1.5 text-xs uppercase tracking-widest text-gold-400">
               <Scissors className="h-3.5 w-3.5" /> Barbearia &amp; Salão
             </span>
@@ -50,17 +63,9 @@ export function HomePage() {
             </div>
             <div className="razor-line mt-10 max-w-xs" />
           </div>
-
-          <div className="relative mx-auto flex aspect-square w-full max-w-md items-center justify-center">
-            <div className="absolute inset-0 rounded-full border border-gold-400/20" />
-            <div className="absolute inset-8 rounded-full border border-crimson-500/30" />
-            <div className="flex h-52 w-52 items-center justify-center rounded-full border-2 border-gold-400 bg-ink-900 shadow-elevated">
-              <Scissors className="h-20 w-20 text-crimson-500" strokeWidth={1.2} />
-            </div>
-          </div>
         </div>
 
-        <div className="border-t border-ink-700 bg-ink-900/60">
+        <div className="relative border-t border-ink-700 bg-ink-900/60">
           <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-4 lg:px-8">
             {FEATURES.map((f) => (
               <div key={f.title} className="flex items-start gap-3">
@@ -87,18 +92,23 @@ export function HomePage() {
           </Link>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {loadingServices &&
-            Array.from({ length: 6 }).map((_, i) => <ServiceCardSkeleton key={i} />)}
-          {servicesError && (
-            <div className="sm:col-span-2 lg:col-span-3">
-              <ErrorState onRetry={() => refetchServices()} />
-            </div>
-          )}
-          {servicesPage?.items.map((service) => (
-            <ServiceCard key={service.id} service={service} />
-          ))}
-        </div>
+        {loadingServices ? (
+          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <ServiceCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : servicesError ? (
+          <div className="mt-8">
+            <ErrorState onRetry={() => refetchServices()} />
+          </div>
+        ) : (
+          <Carousel className="mt-8" itemClassName="w-[85%] sm:w-[47%] lg:w-[31%]">
+            {(servicesPage?.items ?? []).map((service) => (
+              <ServiceCard key={service.id} service={service} />
+            ))}
+          </Carousel>
+        )}
       </section>
 
       {/* ── Time ── */}
@@ -114,20 +124,23 @@ export function HomePage() {
             </Link>
           </div>
 
-          <div className="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-4">
-            {loadingTeam &&
-              Array.from({ length: 4 }).map((_, i) => (
+          {loadingTeam ? (
+            <div className="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="aspect-square animate-pulse rounded-card bg-ink-700" />
               ))}
-            {teamError && (
-              <div className="col-span-2 sm:col-span-4">
-                <ErrorState onRetry={() => refetchTeam()} />
-              </div>
-            )}
-            {teamPage?.items.map((employee) => (
-              <EmployeeCard key={employee.id} employee={employee} />
-            ))}
-          </div>
+            </div>
+          ) : teamError ? (
+            <div className="mt-8">
+              <ErrorState onRetry={() => refetchTeam()} />
+            </div>
+          ) : (
+            <Carousel className="mt-8" itemClassName="w-[42%] sm:w-[26%] lg:w-[19%]">
+              {(teamPage?.items ?? []).map((employee) => (
+                <EmployeeCard key={employee.id} employee={employee} />
+              ))}
+            </Carousel>
+          )}
         </div>
       </section>
 
