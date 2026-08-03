@@ -7,6 +7,7 @@ import {
   Users,
   CalendarClock,
   CalendarOff,
+  CalendarCheck,
   Menu,
   X,
   LogOut,
@@ -45,6 +46,10 @@ export function DashboardLayout() {
       { to: ROUTES.dashboardMySchedule, label: "Minha Agenda", icon: CalendarClock },
       { to: ROUTES.dashboardMyTimeOff, label: "Meus Bloqueios", icon: CalendarOff },
     );
+  }
+
+  if (role === "client") {
+    items.push({ to: ROUTES.dashboardMyAppointments, label: "Meus Agendamentos", icon: CalendarCheck });
   }
 
   items.push({ to: ROUTES.dashboardProfile, label: "Meu Perfil", icon: User });

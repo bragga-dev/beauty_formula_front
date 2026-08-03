@@ -105,9 +105,12 @@ export function DashboardOverviewPage() {
         <Card className="mt-8 p-8 text-center">
           <CalendarClock className="mx-auto h-8 w-8 text-gold-400" />
           <p className="mt-3 text-bone-300">Pronto para o próximo corte?</p>
-          <ButtonLink to={ROUTES.booking} className="mt-4 inline-flex">
-            Agendar horário
-          </ButtonLink>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            <ButtonLink to={ROUTES.booking}>Agendar horário</ButtonLink>
+            <ButtonLink to={ROUTES.dashboardMyAppointments} variant="outline">
+              Meus agendamentos
+            </ButtonLink>
+          </div>
         </Card>
       )}
     </div>

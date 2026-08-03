@@ -25,6 +25,8 @@ import { DashboardTeamPage } from "@/pages/dashboard/DashboardTeamPage";
 import { DashboardMyServicesPage } from "@/pages/dashboard/DashboardMyServicesPage";
 import { DashboardMySchedulePage } from "@/pages/dashboard/DashboardMySchedulePage";
 import { DashboardMyTimeOffPage } from "@/pages/dashboard/DashboardMyTimeOffPage";
+import { DashboardMyAppointmentsPage } from "@/pages/dashboard/DashboardMyAppointmentsPage";
+import { DashboardAppointmentDetailPage } from "@/pages/dashboard/DashboardAppointmentDetailPage";
 
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ROUTES } from "@/constants/routes";
@@ -69,6 +71,13 @@ export function AppRouter() {
             <Route path={ROUTES.dashboardMyServices} element={<DashboardMyServicesPage />} />
             <Route path={ROUTES.dashboardMySchedule} element={<DashboardMySchedulePage />} />
             <Route path={ROUTES.dashboardMyTimeOff} element={<DashboardMyTimeOffPage />} />
+          </Route>
+        </Route>
+
+        <Route element={<ProtectedRoute allow={["client"]} />}>
+          <Route element={<DashboardLayout />}>
+            <Route path={ROUTES.dashboardMyAppointments} element={<DashboardMyAppointmentsPage />} />
+            <Route path="/painel/meus-agendamentos/:appointmentId" element={<DashboardAppointmentDetailPage />} />
           </Route>
         </Route>
 

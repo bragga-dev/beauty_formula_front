@@ -22,4 +22,7 @@ export const ROUTES = {
   dashboardMyServices: "/painel/meus-servicos",
   dashboardMySchedule: "/painel/minha-agenda",
   dashboardMyTimeOff: "/painel/meus-bloqueios",
+
+  dashboardMyAppointments: "/painel/meus-agendamentos",
+  dashboardAppointmentDetail: (id: string) => `/painel/meus-agendamentos/${id}`,
 } as const;
