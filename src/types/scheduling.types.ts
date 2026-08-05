@@ -53,6 +53,7 @@ export interface SchedulingOut {
   notes?: string | null;
   canceled_at?: string | null;
   canceled_reason?: string | null;
+  canceled_by?: UserOut | null;
   rescheduled_to_id?: string | null;
   created_at: string;
   updated_at: string;
@@ -67,6 +68,18 @@ export interface SchedulingCreateInput {
 
 export interface SchedulingCancelInput {
   reason: string;
+}
+
+export interface SchedulingUpdateInput {
+  service_id?: string;
+  employee_id?: string;
+  scheduled_time?: string;
+  notes?: string;
+}
+
+/** Corresponde ao schema `SchedulingPrivateOut` do backend — visão administrativa. */
+export interface SchedulingPrivateOut extends SchedulingOut {
+  is_active: boolean;
 }
 
 /** Horário de término, calculado no front (a API só devolve o início + duração). */
@@ -93,5 +106,16 @@ export function canClientCancelScheduling(scheduling: SchedulingOut): boolean {
  * pro cancelamento do cliente.
  */
 export function canEmployeeActOnScheduling(scheduling: SchedulingOut): boolean {
+  return scheduling.status === "confirmed";
+}
+
+/**
+ * Editar e cancelar como admin só valem com status CONFIRMED — espelha
+ * `can_be_canceled_by_admin` e a checagem de `FINAL_STATUSES` em
+ * `update_scheduling_by_admin` no backend (os dois coincidem, já que os
+ * únicos status não-finais são CONFIRMED). Excluir permanentemente não
+ * tem essa restrição.
+ */
+export function canAdminModifySchedule(scheduling: SchedulingOut): boolean {
   return scheduling.status === "confirmed";
 }

@@ -22,6 +22,8 @@ import { DashboardOverviewPage } from "@/pages/dashboard/DashboardOverviewPage";
 import { ProfilePage } from "@/pages/dashboard/ProfilePage";
 import { DashboardServicesPage } from "@/pages/dashboard/DashboardServicesPage";
 import { DashboardTeamPage } from "@/pages/dashboard/DashboardTeamPage";
+import { DashboardAppointmentsPage } from "@/pages/dashboard/DashboardAppointmentsPage";
+import { DashboardAppointmentAdminDetailPage } from "@/pages/dashboard/DashboardAppointmentAdminDetailPage";
 import { DashboardMyServicesPage } from "@/pages/dashboard/DashboardMyServicesPage";
 import { DashboardMySchedulePage } from "@/pages/dashboard/DashboardMySchedulePage";
 import { DashboardMyTimeOffPage } from "@/pages/dashboard/DashboardMyTimeOffPage";
@@ -65,6 +67,8 @@ export function AppRouter() {
           <Route element={<DashboardLayout />}>
             <Route path={ROUTES.dashboardServices} element={<DashboardServicesPage />} />
             <Route path={ROUTES.dashboardTeam} element={<DashboardTeamPage />} />
+            <Route path={ROUTES.dashboardAppointments} element={<DashboardAppointmentsPage />} />
+            <Route path="/painel/agendamentos/:appointmentId" element={<DashboardAppointmentAdminDetailPage />} />
           </Route>
         </Route>
 

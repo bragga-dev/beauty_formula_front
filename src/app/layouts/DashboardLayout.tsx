@@ -35,6 +35,7 @@ export function DashboardLayout() {
 
   if (role === "admin") {
     items.push(
+      { to: ROUTES.dashboardAppointments, label: "Agendamentos", icon: CalendarCheck },
       { to: ROUTES.dashboardServices, label: "Serviços", icon: Scissors },
       { to: ROUTES.dashboardTeam, label: "Equipe", icon: Users },
     );

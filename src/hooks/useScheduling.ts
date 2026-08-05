@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { schedulingService } from "@/services/scheduling.service";
-import type { SchedulingCancelInput, SchedulingCreateInput, SchedulingFilter } from "@/types/scheduling.types";
+import type {
+  SchedulingCancelInput,
+  SchedulingCreateInput,
+  SchedulingFilter,
+  SchedulingUpdateInput,
+} from "@/types/scheduling.types";
 
 /**
  * `list-my-schedulings` não tem filtro por status no backend (só
@@ -119,4 +124,68 @@ export function useEmployeeSchedulingMutations() {
   });
 
   return { complete, markNoShow, cancel };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Admin
+// ═══════════════════════════════════════════════════════════════════
+
+export interface AdminSchedulingFilters {
+  status?: SchedulingFilter;
+  employeeId?: string;
+  serviceId?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export function useAdminSchedulings(filters: AdminSchedulingFilters, page = 1, pageSize = 10) {
+  return useQuery({
+    queryKey: ["admin", "schedulings", filters, page, pageSize],
+    queryFn: () =>
+      schedulingService.listAll({
+        page,
+        page_size: pageSize,
+        status: filters.status && filters.status !== "all" ? filters.status : undefined,
+        employee_id: filters.employeeId || undefined,
+        service_id: filters.serviceId || undefined,
+        start_date: filters.startDate || undefined,
+        end_date: filters.endDate || undefined,
+      }),
+  });
+}
+
+export function useAdminScheduling(id?: string) {
+  return useQuery({
+    queryKey: ["admin", "scheduling", id],
+    queryFn: () => schedulingService.getAdmin(id as string),
+    enabled: !!id,
+  });
+}
+
+export function useAdminSchedulingMutations() {
+  const queryClient = useQueryClient();
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin", "schedulings"] });
+    queryClient.invalidateQueries({ queryKey: ["admin", "scheduling"] });
+    queryClient.invalidateQueries({ queryKey: ["availability"] });
+  };
+
+  const update = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: SchedulingUpdateInput }) =>
+      schedulingService.updateAsAdmin(id, payload),
+    onSuccess: invalidate,
+  });
+
+  const cancel = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: SchedulingCancelInput }) =>
+      schedulingService.cancelAsAdmin(id, payload),
+    onSuccess: invalidate,
+  });
+
+  const remove = useMutation({
+    mutationFn: (id: string) => schedulingService.removeAsAdmin(id),
+    onSuccess: invalidate,
+  });
+
+  return { update, cancel, remove };
 }

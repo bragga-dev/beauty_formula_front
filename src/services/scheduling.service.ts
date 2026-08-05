@@ -1,6 +1,24 @@
 import { api } from "./api";
-import type { SchedulingCancelInput, SchedulingCreateInput, SchedulingOut } from "@/types/scheduling.types";
+import type {
+  SchedulingCancelInput,
+  SchedulingCreateInput,
+  SchedulingOut,
+  SchedulingPrivateOut,
+  SchedulingUpdateInput,
+} from "@/types/scheduling.types";
 import type { PageOut } from "@/types/common";
+
+export interface AdminSchedulingListParams {
+  page?: number;
+  page_size?: number;
+  service_id?: string;
+  employee_id?: string;
+  client_id?: string;
+  status?: string;
+  start_date?: string;
+  end_date?: string;
+  is_active?: boolean;
+}
 
 export const schedulingService = {
   create: (payload: SchedulingCreateInput) =>
@@ -45,4 +63,22 @@ export const schedulingService = {
     api
       .patch<SchedulingOut>(`/scheduling/cancel-employee-scheduling/${schedulingId}`, payload)
       .then((r) => r.data),
+
+  // ═══════════════════════════════════════════════════════════════
+  // Admin
+  // ═══════════════════════════════════════════════════════════════
+
+  listAll: (params: AdminSchedulingListParams) =>
+    api.get<PageOut<SchedulingPrivateOut>>("/scheduling/list-all", { params }).then((r) => r.data),
+
+  getAdmin: (schedulingId: string) =>
+    api.get<SchedulingPrivateOut>(`/scheduling/${schedulingId}`).then((r) => r.data),
+
+  updateAsAdmin: (schedulingId: string, payload: SchedulingUpdateInput) =>
+    api.patch<SchedulingPrivateOut>(`/scheduling/update/${schedulingId}`, payload).then((r) => r.data),
+
+  cancelAsAdmin: (schedulingId: string, payload: SchedulingCancelInput) =>
+    api.patch<SchedulingPrivateOut>(`/scheduling/cancel/${schedulingId}`, payload).then((r) => r.data),
+
+  removeAsAdmin: (schedulingId: string) => api.delete(`/scheduling/${schedulingId}`),
 };

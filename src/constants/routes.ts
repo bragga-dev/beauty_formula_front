@@ -19,6 +19,8 @@ export const ROUTES = {
   dashboardProfile: "/painel/perfil",
   dashboardServices: "/painel/servicos",
   dashboardTeam: "/painel/equipe",
+  dashboardAppointments: "/painel/agendamentos",
+  dashboardAppointmentAdminDetail: (id: string) => `/painel/agendamentos/${id}`,
   dashboardMyServices: "/painel/meus-servicos",
   dashboardMySchedule: "/painel/minha-agenda",
   dashboardMyTimeOff: "/painel/meus-bloqueios",
