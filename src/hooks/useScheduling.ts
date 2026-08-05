@@ -1,11 +1,35 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { schedulingService } from "@/services/scheduling.service";
-import type { SchedulingCancelInput, SchedulingCreateInput } from "@/types/scheduling.types";
+import type { SchedulingCancelInput, SchedulingCreateInput, SchedulingFilter } from "@/types/scheduling.types";
 
-export function useMySchedulings(page = 1, pageSize = 20, activeOnly = false) {
+/**
+ * `list-my-schedulings` não tem filtro por status no backend (só
+ * `active_only`) — busca um lote (até o teto de 100 da API) e
+ * filtra/pagina no front.
+ */
+export function useMySchedulings(filter: SchedulingFilter = "all", page = 1, pageSize = 10) {
+  const query = useQuery({
+    queryKey: ["schedulings", "mine"],
+    queryFn: () => schedulingService.listMine(1, 100),
+  });
+
+  const filtered = query.data?.items.filter((s) => filter === "all" || s.status === filter) ?? [];
+  const total = filtered.length;
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const start = (page - 1) * pageSize;
+  const items = filtered.slice(start, start + pageSize);
+
+  return {
+    ...query,
+    data: query.data ? { items, total, page, page_size: pageSize, pages } : undefined,
+  };
+}
+
+export function useScheduling(id?: string) {
   return useQuery({
-    queryKey: ["schedulings", "mine", page, pageSize, activeOnly],
-    queryFn: () => schedulingService.listMine(page, pageSize, activeOnly),
+    queryKey: ["scheduling", id],
+    queryFn: () => schedulingService.getMine(id as string),
+    enabled: !!id,
   });
 }
 
@@ -19,6 +43,7 @@ export function useSchedulingMutations() {
   // liberado deve voltar a aparecer na hora.
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["schedulings"] });
+    queryClient.invalidateQueries({ queryKey: ["scheduling"] });
     queryClient.invalidateQueries({ queryKey: ["availability"] });
   };
 
@@ -34,4 +59,64 @@ export function useSchedulingMutations() {
   });
 
   return { create, cancel };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Funcionário
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * `list-employee-schedulings` também não tem filtro por status — mesma
+ * estratégia de `useMySchedulings`: busca um lote e filtra/pagina no front.
+ */
+export function useEmployeeSchedulings(filter: SchedulingFilter = "all", page = 1, pageSize = 10) {
+  const query = useQuery({
+    queryKey: ["schedulings", "employee"],
+    queryFn: () => schedulingService.listForEmployee(1, 100),
+  });
+
+  const filtered = query.data?.items.filter((s) => filter === "all" || s.status === filter) ?? [];
+  const total = filtered.length;
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const start = (page - 1) * pageSize;
+  const items = filtered.slice(start, start + pageSize);
+
+  return {
+    ...query,
+    data: query.data ? { items, total, page, page_size: pageSize, pages } : undefined,
+  };
+}
+
+export function useEmployeeScheduling(id?: string) {
+  return useQuery({
+    queryKey: ["scheduling", "employee", id],
+    queryFn: () => schedulingService.getForEmployee(id as string),
+    enabled: !!id,
+  });
+}
+
+export function useEmployeeSchedulingMutations() {
+  const queryClient = useQueryClient();
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["schedulings"] });
+    queryClient.invalidateQueries({ queryKey: ["scheduling"] });
+  };
+
+  const complete = useMutation({
+    mutationFn: (id: string) => schedulingService.complete(id),
+    onSuccess: invalidate,
+  });
+
+  const markNoShow = useMutation({
+    mutationFn: (id: string) => schedulingService.markNoShow(id),
+    onSuccess: invalidate,
+  });
+
+  const cancel = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: SchedulingCancelInput }) =>
+      schedulingService.cancelAsEmployee(id, payload),
+    onSuccess: invalidate,
+  });
+
+  return { complete, markNoShow, cancel };
 }

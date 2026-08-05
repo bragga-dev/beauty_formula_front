@@ -25,4 +25,7 @@ export const ROUTES = {
 
   dashboardMyAppointments: "/painel/meus-agendamentos",
   dashboardAppointmentDetail: (id: string) => `/painel/meus-agendamentos/${id}`,
+
+  dashboardMyClientAppointments: "/painel/meus-atendimentos",
+  dashboardClientAppointmentDetail: (id: string) => `/painel/meus-atendimentos/${id}`,
 } as const;

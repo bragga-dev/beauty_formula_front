@@ -43,6 +43,7 @@ export function DashboardLayout() {
   if (role === "employee") {
     items.push(
       { to: ROUTES.dashboardMyServices, label: "Meus Serviços", icon: Scissors },
+      { to: ROUTES.dashboardMyClientAppointments, label: "Meus Atendimentos", icon: CalendarCheck },
       { to: ROUTES.dashboardMySchedule, label: "Minha Agenda", icon: CalendarClock },
       { to: ROUTES.dashboardMyTimeOff, label: "Meus Bloqueios", icon: CalendarOff },
     );

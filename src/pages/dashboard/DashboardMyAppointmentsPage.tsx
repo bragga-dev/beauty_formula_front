@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarClock, Eye, XCircle } from "lucide-react";
+import { CalendarClock, Eye, Star, XCircle } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -8,40 +8,48 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Pagination } from "@/components/tables/Pagination";
-import { useMyAppointments, useAppointmentMutations } from "@/hooks/useAppointments";
+import { useMySchedulings, useSchedulingMutations } from "@/hooks/useScheduling";
+import { useMyRatings } from "@/hooks/useRatings";
 import { CancelAppointmentModal } from "@/features/appointments/CancelAppointmentModal";
+import { RateAppointmentModal } from "@/features/ratings/RateAppointmentModal";
 import { useToast } from "@/app/providers/toast-context";
 import { formatCurrencyBRL, formatDate, formatTime } from "@/utils/format";
 import { ROUTES } from "@/constants/routes";
 import {
-  APPOINTMENT_STATUS_LABELS,
-  APPOINTMENT_STATUS_BADGE,
-  canClientCancelAppointment,
-  getAppointmentEndTime,
-  type AppointmentFilter,
-  type AppointmentOut,
-} from "@/types/appointment";
+  SCHEDULING_STATUS_LABELS,
+  SCHEDULING_STATUS_BADGE,
+  canClientCancelScheduling,
+  getSchedulingEndTime,
+  type SchedulingFilter,
+  type SchedulingOut,
+} from "@/types/scheduling.types";
 import type { ApiError } from "@/types/common";
 
-const FILTERS: { value: AppointmentFilter; label: string }[] = [
+const FILTERS: { value: SchedulingFilter; label: string }[] = [
   { value: "all", label: "Todos" },
-  { value: "confirmed", label: APPOINTMENT_STATUS_LABELS.confirmed },
-  { value: "completed", label: APPOINTMENT_STATUS_LABELS.completed },
-  { value: "canceled", label: APPOINTMENT_STATUS_LABELS.canceled },
-  { value: "no_show", label: APPOINTMENT_STATUS_LABELS.no_show },
-  { value: "rescheduled", label: APPOINTMENT_STATUS_LABELS.rescheduled },
+  { value: "confirmed", label: SCHEDULING_STATUS_LABELS.confirmed },
+  { value: "completed", label: SCHEDULING_STATUS_LABELS.completed },
+  { value: "canceled", label: SCHEDULING_STATUS_LABELS.canceled },
+  { value: "no_show", label: SCHEDULING_STATUS_LABELS.no_show },
+  { value: "rescheduled", label: SCHEDULING_STATUS_LABELS.rescheduled },
 ];
 
 export function DashboardMyAppointmentsPage() {
-  const [filter, setFilter] = useState<AppointmentFilter>("all");
+  const [filter, setFilter] = useState<SchedulingFilter>("all");
   const [page, setPage] = useState(1);
-  const { data, isLoading, isError, refetch } = useMyAppointments(filter, page);
-  const { cancel } = useAppointmentMutations();
+  const { data, isLoading, isError, refetch } = useMySchedulings(filter, page);
+  const { cancel } = useSchedulingMutations();
   const { push } = useToast();
 
-  const [cancelling, setCancelling] = useState<AppointmentOut | null>(null);
+  // Mapa scheduling_id -> avaliação, pra saber quem já foi avaliado e
+  // trocar "Avaliar" por "Ver avaliação" nos concluídos.
+  const { data: myRatings } = useMyRatings();
+  const ratingBySchedulingId = new Map((myRatings?.items ?? []).map((r) => [r.scheduling_id, r]));
 
-  function handleFilterChange(value: AppointmentFilter) {
+  const [cancelling, setCancelling] = useState<SchedulingOut | null>(null);
+  const [rating, setRating] = useState<SchedulingOut | null>(null);
+
+  function handleFilterChange(value: SchedulingFilter) {
     setFilter(value);
     setPage(1);
   }
@@ -49,7 +57,7 @@ export function DashboardMyAppointmentsPage() {
   async function handleCancel(reason: string) {
     if (!cancelling) return;
     try {
-      await cancel.mutateAsync({ id: cancelling.id, reason });
+      await cancel.mutateAsync({ id: cancelling.id, payload: { reason } });
       push("Agendamento cancelado.", "success");
       setCancelling(null);
     } catch (err) {
@@ -99,45 +107,54 @@ export function DashboardMyAppointmentsPage() {
           />
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
-            {data?.items.map((appointment: AppointmentOut) => (
-              <Card key={appointment.id} className="flex flex-col gap-4 p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-display text-base uppercase tracking-wide text-bone-50">
-                      {appointment.service.name}
-                    </p>
-                    <p className="mt-1 text-sm text-bone-500">
-                      com{" "}
-                      {[appointment.employee.first_name, appointment.employee.last_name]
-                        .filter(Boolean)
-                        .join(" ") || "profissional"}
-                    </p>
+            {data?.items.map((scheduling: SchedulingOut) => {
+              const existingRating = ratingBySchedulingId.get(scheduling.id);
+              return (
+                <Card key={scheduling.id} className="flex flex-col gap-4 p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-display text-base uppercase tracking-wide text-bone-50">
+                        {scheduling.service.name}
+                      </p>
+                      <p className="mt-1 text-sm text-bone-500">
+                        com{" "}
+                        {[scheduling.employee.first_name, scheduling.employee.last_name]
+                          .filter(Boolean)
+                          .join(" ") || "profissional"}
+                      </p>
+                    </div>
+                    <Badge variant={SCHEDULING_STATUS_BADGE[scheduling.status]}>
+                      {SCHEDULING_STATUS_LABELS[scheduling.status]}
+                    </Badge>
                   </div>
-                  <Badge variant={APPOINTMENT_STATUS_BADGE[appointment.status]}>
-                    {APPOINTMENT_STATUS_LABELS[appointment.status]}
-                  </Badge>
-                </div>
 
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-bone-300">
-                  <span>{formatDate(appointment.scheduled_time)}</span>
-                  <span>
-                    {formatTime(appointment.scheduled_time)} – {formatTime(getAppointmentEndTime(appointment))}
-                  </span>
-                  <span className="text-gold-400">{formatCurrencyBRL(appointment.price_at_booking)}</span>
-                </div>
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-bone-300">
+                    <span>{formatDate(scheduling.scheduled_time)}</span>
+                    <span>
+                      {formatTime(scheduling.scheduled_time)} – {formatTime(getSchedulingEndTime(scheduling))}
+                    </span>
+                    <span className="text-gold-400">{formatCurrencyBRL(scheduling.price_at_booking)}</span>
+                  </div>
 
-                <div className="mt-auto flex items-center justify-end gap-2 border-t border-ink-700 pt-4">
-                  {canClientCancelAppointment(appointment) && (
-                    <Button variant="ghost" size="sm" onClick={() => setCancelling(appointment)}>
-                      <XCircle className="h-4 w-4 text-danger-500" /> Cancelar
-                    </Button>
-                  )}
-                  <ButtonLink to={ROUTES.dashboardAppointmentDetail(appointment.id)} variant="outline" size="sm">
-                    <Eye className="h-4 w-4" /> Ver detalhes
-                  </ButtonLink>
-                </div>
-              </Card>
-            ))}
+                  <div className="mt-auto flex flex-wrap items-center justify-end gap-2 border-t border-ink-700 pt-4">
+                    {scheduling.status === "completed" && (
+                      <Button variant="ghost" size="sm" onClick={() => setRating(scheduling)}>
+                        <Star className="h-4 w-4 text-gold-400" />
+                        {existingRating ? "Ver avaliação" : "Avaliar"}
+                      </Button>
+                    )}
+                    {canClientCancelScheduling(scheduling) && (
+                      <Button variant="ghost" size="sm" onClick={() => setCancelling(scheduling)}>
+                        <XCircle className="h-4 w-4 text-danger-500" /> Cancelar
+                      </Button>
+                    )}
+                    <ButtonLink to={ROUTES.dashboardAppointmentDetail(scheduling.id)} variant="outline" size="sm">
+                      <Eye className="h-4 w-4" /> Ver detalhes
+                    </ButtonLink>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         )}
 
@@ -154,6 +171,13 @@ export function DashboardMyAppointmentsPage() {
         isLoading={cancel.isPending}
         onConfirm={handleCancel}
         onClose={() => setCancelling(null)}
+      />
+
+      <RateAppointmentModal
+        open={!!rating}
+        scheduling={rating}
+        existingRating={rating ? ratingBySchedulingId.get(rating.id) : undefined}
+        onClose={() => setRating(null)}
       />
     </div>
   );
