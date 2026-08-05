@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { AtSign } from "lucide-react";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { ROUTES } from "@/constants/routes";
 import { initials } from "@/utils/format";
@@ -36,12 +35,6 @@ export function EmployeeCard({ employee }: { employee: EmployeeTeamOut }) {
           size="xs"
           className="mt-1.5"
         />
-        {employee.bio && <p className="mt-1.5 line-clamp-2 text-xs text-bone-500">{employee.bio}</p>}
-        {employee.instagram && (
-          <span className="mt-2 flex items-center gap-1 text-xs text-gold-400">
-            <AtSign className="h-3 w-3" /> {employee.instagram}
-          </span>
-        )}
       </div>
     </Link>
   );
