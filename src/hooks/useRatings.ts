@@ -25,6 +25,24 @@ export function useEmployeeRatingSummary(employeeId?: string) {
   });
 }
 
+/** Avaliações públicas (autorizadas) de um serviço — usado na página de detalhe. */
+export function useServiceRatings(serviceId?: string, page = 1, pageSize = 10) {
+  return useQuery({
+    queryKey: ["ratings", "service-list", serviceId, page, pageSize],
+    queryFn: () => ratingsService.listForService(serviceId as string, page, pageSize),
+    enabled: !!serviceId,
+  });
+}
+
+/** Avaliações públicas (autorizadas) de um funcionário — usado na página de detalhe. */
+export function useEmployeeRatings(employeeId?: string, page = 1, pageSize = 10) {
+  return useQuery({
+    queryKey: ["ratings", "employee-list", employeeId, page, pageSize],
+    queryFn: () => ratingsService.listForEmployee(employeeId as string, page, pageSize),
+    enabled: !!employeeId,
+  });
+}
+
 export function useRatingMutations() {
   const queryClient = useQueryClient();
   // Invalida as avaliações do cliente E os agregados (públicos) —

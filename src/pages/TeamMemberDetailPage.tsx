@@ -2,10 +2,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, AtSign, CalendarClock } from "lucide-react";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ButtonLink } from "@/components/ui/ButtonLink";
+import { RatingStars } from "@/components/ui/RatingStars";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { ReviewList } from "@/features/ratings/ReviewList";
 import { formatCurrencyBRL, formatDuration, initials } from "@/utils/format";
 import { useTeamMember } from "@/hooks/useTeam";
+import { useEmployeeRatingSummary, useEmployeeRatings } from "@/hooks/useRatings";
 import { ROUTES } from "@/constants/routes";
 import { Scissors } from "lucide-react";
 
@@ -13,6 +16,8 @@ export function TeamMemberDetailPage() {
   const { employeeId } = useParams<{ employeeId: string }>();
   const navigate = useNavigate();
   const { data: employee, isLoading, isError, refetch } = useTeamMember(employeeId);
+  const { data: ratingSummary } = useEmployeeRatingSummary(employeeId);
+  const { data: ratingsPage, isLoading: isLoadingRatings } = useEmployeeRatings(employeeId);
 
   if (isLoading) {
     return (
@@ -54,6 +59,12 @@ export function TeamMemberDetailPage() {
         </div>
         <div>
           <h1 className="text-3xl">{name}</h1>
+          <RatingStars
+            value={ratingSummary?.average_rating ?? 0}
+            totalReviews={ratingSummary?.total_reviews}
+            size="md"
+            className="mt-2 justify-center sm:justify-start"
+          />
           {employee.bio && <p className="mt-2 max-w-lg text-bone-400">{employee.bio}</p>}
           {employee.instagram && (
             <span className="mt-2 inline-flex items-center gap-1.5 text-sm text-gold-400">
@@ -89,6 +100,20 @@ export function TeamMemberDetailPage() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="mt-12">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl">Avaliações</h2>
+          <RatingStars
+            value={ratingSummary?.average_rating ?? 0}
+            totalReviews={ratingSummary?.total_reviews}
+            size="sm"
+          />
+        </div>
+        <div className="mt-5">
+          <ReviewList ratings={ratingsPage?.items} isLoading={isLoadingRatings} emptySubject="este profissional" />
         </div>
       </div>
     </div>

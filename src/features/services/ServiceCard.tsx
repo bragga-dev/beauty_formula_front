@@ -1,11 +1,15 @@
 import { Link } from "react-router-dom";
 import { Clock, ArrowUpRight } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { RatingStars } from "@/components/ui/RatingStars";
 import { ROUTES } from "@/constants/routes";
 import { formatCurrencyBRL, formatDuration } from "@/utils/format";
+import { useServiceRatingSummary } from "@/hooks/useRatings";
 import type { ServiceOut } from "@/types/service";
 
 export function ServiceCard({ service }: { service: ServiceOut }) {
+  const { data: summary } = useServiceRatingSummary(service.id);
+
   return (
     <Link to={ROUTES.serviceDetail(service.id)}>
       <Card className="group h-full overflow-hidden transition-all hover:border-gold-400/50 hover:shadow-elevated">
@@ -25,6 +29,12 @@ export function ServiceCard({ service }: { service: ServiceOut }) {
           {service.description && (
             <p className="mt-2 line-clamp-2 text-sm text-bone-500">{service.description}</p>
           )}
+          <RatingStars
+            value={summary?.average_rating ?? 0}
+            totalReviews={summary?.total_reviews}
+            size="xs"
+            className="mt-3"
+          />
           <div className="mt-4 flex items-center justify-between border-t border-ink-700 pt-4">
             <span className="flex items-center gap-1.5 text-xs text-bone-500">
               <Clock className="h-3.5 w-3.5" /> {formatDuration(service.duration_minutes)}
