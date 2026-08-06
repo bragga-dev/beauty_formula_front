@@ -8,6 +8,7 @@ import {
   CalendarClock,
   CalendarOff,
   CalendarCheck,
+  Star,
   Menu,
   X,
   LogOut,
@@ -38,6 +39,7 @@ export function DashboardLayout() {
       { to: ROUTES.dashboardAppointments, label: "Agendamentos", icon: CalendarCheck },
       { to: ROUTES.dashboardServices, label: "Serviços", icon: Scissors },
       { to: ROUTES.dashboardTeam, label: "Equipe", icon: Users },
+      { to: ROUTES.dashboardRatings, label: "Avaliações", icon: Star },
     );
   }
 
@@ -47,6 +49,7 @@ export function DashboardLayout() {
       { to: ROUTES.dashboardMyClientAppointments, label: "Meus Atendimentos", icon: CalendarCheck },
       { to: ROUTES.dashboardMySchedule, label: "Minha Agenda", icon: CalendarClock },
       { to: ROUTES.dashboardMyTimeOff, label: "Meus Bloqueios", icon: CalendarOff },
+      { to: ROUTES.dashboardRatings, label: "Avaliações", icon: Star },
     );
   }
 

@@ -1,6 +1,7 @@
 import { api } from "./api";
 import type { PageOut } from "@/types/common";
 import type {
+  AdminRatingFilters,
   AverageRatingCreateInput,
   AverageRatingOut,
   AverageRatingPrivateOut,
@@ -47,4 +48,38 @@ export const ratingsService = {
 
   getEmployeeSummary: (employeeId: string) =>
     api.get<RatingSummaryOut>(`/average-ratings/employee/${employeeId}/summary`).then((r) => r.data),
+
+  // ═══════════════════════════════════════════════════════════════
+  // Admin / Funcionário — moderação
+  // ═══════════════════════════════════════════════════════════════
+
+  /** Admin vê tudo; funcionário recebe só as avaliações sobre ele mesmo (filtrado no backend). */
+  listForModeration: (filters: AdminRatingFilters, page = 1, page_size = 10) =>
+    api
+      .get<PageOut<AverageRatingPrivateOut>>("/average-ratings/admin/list", {
+        params: {
+          page,
+          page_size,
+          service_id: filters.serviceId || undefined,
+          employee_id: filters.employeeId || undefined,
+          client_id: filters.clientId || undefined,
+          rating: filters.rating || undefined,
+          is_authorized: filters.isAuthorized,
+        },
+      })
+      .then((r) => r.data),
+
+  getForModeration: (ratingId: string) =>
+    api.get<AverageRatingPrivateOut>(`/average-ratings/admin/${ratingId}`).then((r) => r.data),
+
+  /** Admin autoriza qualquer avaliação; funcionário só as que são sobre ele mesmo. */
+  authorize: (ratingId: string) =>
+    api.patch<AverageRatingPrivateOut>(`/average-ratings/admin/${ratingId}/authorize`).then((r) => r.data),
+
+  /** Só admin — revoga a publicação de uma avaliação já autorizada. */
+  revoke: (ratingId: string) =>
+    api.patch<AverageRatingPrivateOut>(`/average-ratings/admin/${ratingId}/revoke`).then((r) => r.data),
+
+  /** Só admin — exclui permanentemente. */
+  removeAsAdmin: (ratingId: string) => api.delete(`/average-ratings/admin/${ratingId}`),
 };

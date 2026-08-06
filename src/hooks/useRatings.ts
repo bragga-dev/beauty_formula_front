@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ratingsService } from "@/services/ratings.service";
-import type { AverageRatingCreateInput, AverageRatingUpdateInput } from "@/types/rating";
+import type { AdminRatingFilters, AverageRatingCreateInput, AverageRatingUpdateInput } from "@/types/rating";
 
 export function useMyRatings() {
   return useQuery({
@@ -68,4 +68,48 @@ export function useRatingMutations() {
   });
 
   return { create, update, remove };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Admin / Funcionário — moderação
+// ═══════════════════════════════════════════════════════════════════
+
+/** Admin recebe todas as avaliações; funcionário só as que são sobre ele mesmo (o backend restringe). */
+export function useModerationRatings(filters: AdminRatingFilters, page = 1, pageSize = 10) {
+  return useQuery({
+    queryKey: ["ratings", "moderation", filters, page, pageSize],
+    queryFn: () => ratingsService.listForModeration(filters, page, pageSize),
+  });
+}
+
+export function useModerationRating(id?: string) {
+  return useQuery({
+    queryKey: ["ratings", "moderation", "detail", id],
+    queryFn: () => ratingsService.getForModeration(id as string),
+    enabled: !!id,
+  });
+}
+
+export function useRatingModerationMutations() {
+  const queryClient = useQueryClient();
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["ratings"] });
+  };
+
+  const authorize = useMutation({
+    mutationFn: (id: string) => ratingsService.authorize(id),
+    onSuccess: invalidate,
+  });
+
+  const revoke = useMutation({
+    mutationFn: (id: string) => ratingsService.revoke(id),
+    onSuccess: invalidate,
+  });
+
+  const remove = useMutation({
+    mutationFn: (id: string) => ratingsService.removeAsAdmin(id),
+    onSuccess: invalidate,
+  });
+
+  return { authorize, revoke, remove };
 }

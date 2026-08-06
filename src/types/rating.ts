@@ -1,18 +1,20 @@
 import type { ServiceOut } from "./service";
 import type { EmployeeOut } from "./employee";
+import type { ClientOut } from "./scheduling.types";
 
 /** Espelha `RatingEnum` do backend (1 a 5 estrelas). */
 export type RatingValue = 1 | 2 | 3 | 4 | 5;
 
 /**
- * Visão privada de uma avaliação (dona/cliente ou admin) — corresponde
- * ao schema `AverageRatingPrivateOut`.
+ * Visão privada de uma avaliação (dona/cliente, admin ou funcionário
+ * dono da avaliação) — corresponde ao schema `AverageRatingPrivateOut`.
  */
 export interface AverageRatingPrivateOut {
   id: string;
   scheduling_id: string;
   service: ServiceOut;
   employee: EmployeeOut;
+  client: ClientOut;
   rating: RatingValue;
   rating_label: string;
   comment?: string | null;
@@ -29,6 +31,7 @@ export interface AverageRatingOut {
   id: string;
   service: ServiceOut;
   employee: EmployeeOut;
+  client: ClientOut;
   rating: RatingValue;
   rating_label: string;
   comment?: string | null;
@@ -51,4 +54,17 @@ export interface RatingSummaryOut {
   average_rating: string;
   total_reviews: number;
   updated_at?: string | null;
+}
+
+/**
+ * Filtros de `/average-ratings/admin/list`. Para funcionário, `employee_id`
+ * é ignorado pelo backend — a listagem é sempre restrita às avaliações
+ * sobre ele mesmo, então o filtro só faz sentido para o admin.
+ */
+export interface AdminRatingFilters {
+  serviceId?: string;
+  employeeId?: string;
+  clientId?: string;
+  rating?: RatingValue;
+  isAuthorized?: boolean;
 }
