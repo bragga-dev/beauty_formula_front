@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Trash2, Eye, Search, MailQuestion } from "lucide-react";
 import { DataTable, type Column } from "@/components/tables/DataTable";
+import { MobileRowCard } from "@/components/tables/MobileRowCard";
 import { Pagination } from "@/components/tables/Pagination";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -90,6 +91,30 @@ export function DashboardContactsPage() {
     },
   ];
 
+  function renderContactCard(c: ContactOut) {
+    return (
+      <MobileRowCard
+        title={c.full_name}
+        subtitle={c.email}
+        badges={<Badge variant={STATUS_VARIANT[c.status]}>{CONTACT_STATUS_LABELS[c.status]}</Badge>}
+        meta={[
+          { label: "Assunto", value: CONTACT_SUBJECT_LABELS[c.subject] },
+          { label: "Recebido em", value: formatDate(c.created_at) },
+        ]}
+        actions={
+          <>
+            <Button variant="ghost" size="icon" onClick={() => setViewingContact(c)} aria-label="Ver detalhes">
+              <Eye className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setDeletingContact(c)} aria-label="Excluir">
+              <Trash2 className="h-4 w-4 text-danger-500" />
+            </Button>
+          </>
+        }
+      />
+    );
+  }
+
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -146,7 +171,13 @@ export function DashboardContactsPage() {
           <EmptyState icon={MailQuestion} title="Nenhum contato encontrado" description="Ajuste os filtros ou aguarde novas mensagens." />
         ) : (
           <>
-            <DataTable columns={columns} rows={data?.items ?? []} rowKey={(c) => c.id} isLoading={isLoading} />
+            <DataTable
+              columns={columns}
+              rows={data?.items ?? []}
+              rowKey={(c) => c.id}
+              isLoading={isLoading}
+              renderCard={renderContactCard}
+            />
             {data && (
               <div className="mt-4">
                 <Pagination page={data.page} pages={data.pages} onChange={setPage} />

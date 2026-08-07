@@ -31,13 +31,13 @@ export function DataTable<T>({ columns, rows, rowKey, isLoading, renderCard }: D
   return (
     <>
       {renderCard && (
-        <div className="flex flex-col gap-3 sm:hidden">
+        <div className="flex flex-col gap-3 md:hidden">
           {rows.map((row) => (
             <div key={rowKey(row)}>{renderCard(row)}</div>
           ))}
         </div>
       )}
-      <div className={renderCard ? "hidden overflow-x-auto rounded-card border border-ink-700 sm:block" : "overflow-x-auto rounded-card border border-ink-700"}>
+      <div className={renderCard ? "hidden overflow-x-auto rounded-card border border-ink-700 md:block" : "overflow-x-auto rounded-card border border-ink-700"}>
         <table className="w-full min-w-[560px] text-left text-sm">
           <thead className="bg-ink-800 text-xs uppercase tracking-wide text-bone-500">
             <tr>

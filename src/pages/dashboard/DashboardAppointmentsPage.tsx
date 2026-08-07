@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CalendarClock, Eye, XCircle } from "lucide-react";
 import { DataTable, type Column } from "@/components/tables/DataTable";
+import { MobileRowCard } from "@/components/tables/MobileRowCard";
 import { Pagination } from "@/components/tables/Pagination";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -111,6 +112,38 @@ export function DashboardAppointmentsPage() {
     },
   ];
 
+  function renderAppointmentCard(s: SchedulingPrivateOut) {
+    return (
+      <MobileRowCard
+        title={clientName(s)}
+        subtitle={s.service.name}
+        badges={<Badge variant={SCHEDULING_STATUS_BADGE[s.status]}>{SCHEDULING_STATUS_LABELS[s.status]}</Badge>}
+        meta={[
+          { label: "Funcionário", value: employeeName(s) },
+          { label: "Data", value: `${formatDate(s.scheduled_time)} · ${formatTime(s.scheduled_time)}` },
+          { label: "Valor", value: formatCurrencyBRL(s.price_at_booking) },
+        ]}
+        actions={
+          <>
+            {canAdminModifySchedule(s) && (
+              <Button variant="ghost" size="icon" onClick={() => setCancelling(s)} aria-label="Cancelar">
+                <XCircle className="h-4 w-4 text-danger-500" />
+              </Button>
+            )}
+            <ButtonLink
+              to={ROUTES.dashboardAppointmentAdminDetail(s.id)}
+              variant="ghost"
+              size="icon"
+              aria-label="Ver detalhes"
+            >
+              <Eye className="h-4 w-4" />
+            </ButtonLink>
+          </>
+        }
+      />
+    );
+  }
+
   return (
     <div>
       <div>
@@ -187,7 +220,13 @@ export function DashboardAppointmentsPage() {
           />
         ) : (
           <>
-            <DataTable columns={columns} rows={data?.items ?? []} rowKey={(s) => s.id} isLoading={isLoading} />
+            <DataTable
+              columns={columns}
+              rows={data?.items ?? []}
+              rowKey={(s) => s.id}
+              isLoading={isLoading}
+              renderCard={renderAppointmentCard}
+            />
             {data && (
               <div className="mt-4">
                 <Pagination page={data.page} pages={data.pages} onChange={setPage} />

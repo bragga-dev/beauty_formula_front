@@ -104,7 +104,7 @@ export function ProfilePage() {
       <p className="mt-1 text-bone-500">Atualize seus dados pessoais e sua foto.</p>
 
       <Card className="mt-8">
-        <CardHeader className="flex items-center gap-4">
+        <CardHeader className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
           <div className="relative">
             <Avatar
               src={profile?.photo_url}
@@ -123,9 +123,9 @@ export function ProfilePage() {
             </button>
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
           </div>
-          <div>
-            <p className="text-sm text-bone-100">{me?.user.email}</p>
-            <p className="text-xs text-bone-600">{me?.user.role_label}</p>
+          <div className="min-w-0">
+            <p className="truncate text-sm text-bone-100">{me?.user.email}</p>
+            <p className="truncate text-xs text-bone-600">{me?.user.role_label}</p>
           </div>
         </CardHeader>
 

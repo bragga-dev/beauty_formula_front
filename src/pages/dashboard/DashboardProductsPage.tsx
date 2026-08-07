@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Power, Package, ImageIcon } from "lucide-react";
 import { DataTable, type Column } from "@/components/tables/DataTable";
+import { MobileRowCard } from "@/components/tables/MobileRowCard";
 import { Pagination } from "@/components/tables/Pagination";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -114,6 +115,41 @@ export function DashboardProductsPage() {
     },
   ];
 
+  function renderProductCard(p: ProductPrivateOut) {
+    return (
+      <MobileRowCard
+        media={
+          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-card bg-ink-700">
+            {p.image_url ? (
+              <img src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
+            ) : (
+              <ImageIcon className="m-auto mt-3 h-5 w-5 text-bone-600" />
+            )}
+          </div>
+        }
+        title={p.name}
+        badges={<Badge variant={p.is_active ? "success" : "neutral"}>{p.is_active ? "Ativo" : "Inativo"}</Badge>}
+        meta={[
+          { label: "Preço", value: formatCurrencyBRL(p.price) },
+          { label: "Estoque", value: p.stock },
+        ]}
+        actions={
+          <>
+            <Button variant="ghost" size="icon" onClick={() => handleToggleActive(p)} aria-label="Ativar/desativar">
+              <Power className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => openEdit(p)} aria-label="Editar">
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setDeletingProduct(p)} aria-label="Excluir">
+              <Trash2 className="h-4 w-4 text-danger-500" />
+            </Button>
+          </>
+        }
+      />
+    );
+  }
+
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -139,7 +175,13 @@ export function DashboardProductsPage() {
           />
         ) : (
           <>
-            <DataTable columns={columns} rows={data?.items ?? []} rowKey={(p) => p.id} isLoading={isLoading} />
+            <DataTable
+              columns={columns}
+              rows={data?.items ?? []}
+              rowKey={(p) => p.id}
+              isLoading={isLoading}
+              renderCard={renderProductCard}
+            />
             {data && (
               <div className="mt-4">
                 <Pagination page={data.page} pages={data.pages} onChange={setPage} />

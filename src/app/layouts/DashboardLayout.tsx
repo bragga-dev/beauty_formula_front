@@ -120,7 +120,7 @@ export function DashboardLayout() {
         {NavContent}
       </aside>
 
-      <div className="flex min-h-screen flex-1 flex-col">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between border-b border-ink-700 bg-ink-900 px-4 py-3 lg:hidden">
           <Logo />
           <button onClick={() => setMobileOpen(true)} aria-label="Abrir menu">
@@ -144,8 +144,10 @@ export function DashboardLayout() {
           </div>
         )}
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          <Outlet />
+        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto w-full min-w-0 max-w-7xl">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

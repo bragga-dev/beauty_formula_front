@@ -79,7 +79,7 @@ export function DashboardOverviewPage() {
 
   return (
     <div>
-      <h1 className="text-3xl">Olá, {displayName}!</h1>
+      <h1 className="text-3xl break-words">Olá, {displayName}!</h1>
       <p className="mt-1 text-bone-500">
         {role === "admin" && "Aqui está um resumo do seu negócio."}
         {role === "employee" && "Aqui está um resumo da sua agenda e serviços."}

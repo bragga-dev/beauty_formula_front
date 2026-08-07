@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { ROUTES } from "@/constants/routes";
 import { formatCurrencyBRL } from "@/utils/format";
-import type { ProductOut } from "@/types/product";
+import type { ProductOut } from "@/types/products";
 
 export function ProductCard({ product }: { product: ProductOut }) {
   const outOfStock = product.stock <= 0;

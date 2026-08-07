@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CheckCircle2, MessageSquareText, RotateCcw, Trash2 } from "lucide-react";
 import { DataTable, type Column } from "@/components/tables/DataTable";
+import { MobileRowCard } from "@/components/tables/MobileRowCard";
 import { Pagination } from "@/components/tables/Pagination";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -151,6 +152,50 @@ export function DashboardRatingsPage() {
     },
   ];
 
+  function renderRatingCard(r: AverageRatingPrivateOut) {
+    return (
+      <MobileRowCard
+        title={clientName(r)}
+        subtitle={r.service.name}
+        badges={
+          <Badge variant={r.is_authorized ? "success" : "neutral"}>
+            {r.is_authorized ? "Publicada" : "Pendente"}
+          </Badge>
+        }
+        meta={[
+          ...(isAdmin ? [{ label: "Funcionário", value: employeeName(r) }] : []),
+          { label: "Nota", value: <RatingStars value={r.rating} size="xs" showValue={false} /> },
+          { label: "Comentário", value: r.comment || "—" },
+        ]}
+        actions={
+          <>
+            {!r.is_authorized && (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Publicar"
+                onClick={() => handleAuthorize(r)}
+                disabled={authorize.isPending}
+              >
+                <CheckCircle2 className="h-4 w-4 text-success-500" />
+              </Button>
+            )}
+            {isAdmin && r.is_authorized && (
+              <Button variant="ghost" size="icon" aria-label="Revogar" onClick={() => setRevoking(r)}>
+                <RotateCcw className="h-4 w-4 text-bone-400" />
+              </Button>
+            )}
+            {isAdmin && (
+              <Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => setDeleting(r)}>
+                <Trash2 className="h-4 w-4 text-danger-500" />
+              </Button>
+            )}
+          </>
+        }
+      />
+    );
+  }
+
   return (
     <div>
       <div>
@@ -215,7 +260,13 @@ export function DashboardRatingsPage() {
           />
         ) : (
           <>
-            <DataTable columns={columns} rows={data?.items ?? []} rowKey={(r) => r.id} isLoading={isLoading} />
+            <DataTable
+              columns={columns}
+              rows={data?.items ?? []}
+              rowKey={(r) => r.id}
+              isLoading={isLoading}
+              renderCard={renderRatingCard}
+            />
             {data && (
               <div className="mt-4">
                 <Pagination page={data.page} pages={data.pages} onChange={setPage} />

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Plus, ShieldCheck, Power, PowerOff, Search, Users as UsersIcon } from "lucide-react";
 import { DataTable, type Column } from "@/components/tables/DataTable";
+import { MobileRowCard } from "@/components/tables/MobileRowCard";
 import { Pagination } from "@/components/tables/Pagination";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
@@ -138,6 +139,53 @@ export function DashboardUsersPage() {
     },
   ];
 
+  function renderUserCard(u: UserAdminOut) {
+    return (
+      <MobileRowCard
+        media={
+          <Avatar
+            src={u.photo_url}
+            alt={u.display_name ?? u.email}
+            fallback={initials(u.display_name ?? u.email)}
+            size="sm"
+          />
+        }
+        title={u.display_name ?? "—"}
+        subtitle={u.email}
+        badges={
+          <>
+            <Badge variant={ROLE_VARIANT[u.role]}>{ROLE_LABELS[u.role]}</Badge>
+            <Badge variant={u.is_active ? "success" : "neutral"}>{u.is_active ? "Ativo" : "Inativo"}</Badge>
+          </>
+        }
+        meta={[{ label: "Cadastrado em", value: formatDate(u.date_joined) }]}
+        actions={
+          <>
+            {u.role === "client" && (
+              <Button variant="ghost" size="icon" onClick={() => setPromoting(u)} aria-label="Promover a funcionário">
+                <ShieldCheck className="h-4 w-4" />
+              </Button>
+            )}
+            {u.role !== "admin" && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTogglingStatus(u)}
+                aria-label={u.is_active ? "Desativar" : "Reativar"}
+              >
+                {u.is_active ? (
+                  <PowerOff className="h-4 w-4 text-danger-500" />
+                ) : (
+                  <Power className="h-4 w-4 text-success-500" />
+                )}
+              </Button>
+            )}
+          </>
+        }
+      />
+    );
+  }
+
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -192,7 +240,13 @@ export function DashboardUsersPage() {
           <EmptyState icon={UsersIcon} title="Nenhum usuário encontrado" description="Ajuste os filtros de busca." />
         ) : (
           <>
-            <DataTable columns={columns} rows={data?.items ?? []} rowKey={(u) => u.id} isLoading={isLoading} />
+            <DataTable
+              columns={columns}
+              rows={data?.items ?? []}
+              rowKey={(u) => u.id}
+              isLoading={isLoading}
+              renderCard={renderUserCard}
+            />
             {data && (
               <div className="mt-4">
                 <Pagination page={data.page} pages={data.pages} onChange={setPage} />
