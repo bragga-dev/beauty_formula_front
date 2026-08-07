@@ -7,6 +7,8 @@ import { HomePage } from "@/pages/HomePage";
 import { AboutPage } from "@/pages/AboutPage";
 import { ServicesPage } from "@/pages/ServicesPage";
 import { ServiceDetailPage } from "@/pages/ServiceDetailPage";
+import { ProductsPage } from "@/pages/ProductsPage";
+import { ProductDetailPage } from "@/pages/ProductDetailPage";
 import { TeamPage } from "@/pages/TeamPage";
 import { TeamMemberDetailPage } from "@/pages/TeamMemberDetailPage";
 import { AllRatingsPage } from "@/pages/AllRatingsPage";
@@ -22,6 +24,8 @@ import { VerifyEmailPage } from "@/pages/VerifyEmailPage";
 import { DashboardOverviewPage } from "@/pages/dashboard/DashboardOverviewPage";
 import { ProfilePage } from "@/pages/dashboard/ProfilePage";
 import { DashboardServicesPage } from "@/pages/dashboard/DashboardServicesPage";
+import { DashboardProductsPage } from "@/pages/dashboard/DashboardProductsPage";
+import { DashboardContactsPage } from "@/pages/dashboard/DashboardContactsPage";
 import { DashboardTeamPage } from "@/pages/dashboard/DashboardTeamPage";
 import { DashboardAppointmentsPage } from "@/pages/dashboard/DashboardAppointmentsPage";
 import { DashboardAppointmentAdminDetailPage } from "@/pages/dashboard/DashboardAppointmentAdminDetailPage";
@@ -46,6 +50,8 @@ export function AppRouter() {
           <Route path={ROUTES.about} element={<AboutPage />} />
           <Route path={ROUTES.services} element={<ServicesPage />} />
           <Route path="/servicos/:serviceId" element={<ServiceDetailPage />} />
+          <Route path={ROUTES.products} element={<ProductsPage />} />
+          <Route path="/produtos/:productId" element={<ProductDetailPage />} />
           <Route path={ROUTES.team} element={<TeamPage />} />
           <Route path="/nosso-time/:employeeId" element={<TeamMemberDetailPage />} />
           <Route path={ROUTES.ratings} element={<AllRatingsPage />} />
@@ -69,6 +75,8 @@ export function AppRouter() {
         <Route element={<ProtectedRoute allow={["admin"]} />}>
           <Route element={<DashboardLayout />}>
             <Route path={ROUTES.dashboardServices} element={<DashboardServicesPage />} />
+            <Route path={ROUTES.dashboardProducts} element={<DashboardProductsPage />} />
+            <Route path={ROUTES.dashboardContacts} element={<DashboardContactsPage />} />
             <Route path={ROUTES.dashboardTeam} element={<DashboardTeamPage />} />
             <Route path={ROUTES.dashboardAppointments} element={<DashboardAppointmentsPage />} />
             <Route path="/painel/agendamentos/:appointmentId" element={<DashboardAppointmentAdminDetailPage />} />

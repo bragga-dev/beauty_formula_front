@@ -13,7 +13,7 @@ export function PublicFooter() {
             Estilo, confiança e atitude em cada detalhe. Barbearia &amp; salão de beleza.
           </p>
           <div className="mt-4 flex gap-3">
-            <a href="#" aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-600 text-bone-400 transition-colors hover:border-gold-400 hover:text-gold-400">
+            <a href="https://www.instagram.com/_formuladabeleza/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-600 text-bone-400 transition-colors hover:border-gold-400 hover:text-gold-400">
               <AtSign className="h-4 w-4" />
             </a>
             <a href="#" aria-label="Facebook" className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-600 text-bone-400 transition-colors hover:border-gold-400 hover:text-gold-400">
@@ -48,7 +48,7 @@ export function PublicFooter() {
         </div>
       </div>
       <div className="border-t border-ink-700 py-5 text-center text-xs text-bone-600">
-        © {new Date().getFullYear()} Fórmula da Beleza. Todos os direitos reservados.
+        © {new Date().getFullYear()} Fórmula da Beleza. Todos os direitos reservados. · CNPJ 00.000.000/0001-00
       </div>
     </footer>
   );

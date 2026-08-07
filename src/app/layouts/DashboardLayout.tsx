@@ -9,6 +9,8 @@ import {
   CalendarOff,
   CalendarCheck,
   Star,
+  Package,
+  MailQuestion,
   Menu,
   X,
   LogOut,
@@ -38,6 +40,8 @@ export function DashboardLayout() {
     items.push(
       { to: ROUTES.dashboardAppointments, label: "Agendamentos", icon: CalendarCheck },
       { to: ROUTES.dashboardServices, label: "Serviços", icon: Scissors },
+      { to: ROUTES.dashboardProducts, label: "Produtos", icon: Package },
+      { to: ROUTES.dashboardContacts, label: "Contatos", icon: MailQuestion },
       { to: ROUTES.dashboardTeam, label: "Equipe", icon: Users },
       { to: ROUTES.dashboardRatings, label: "Avaliações", icon: Star },
     );
