@@ -5,6 +5,7 @@ import {
   User,
   Scissors,
   Users,
+  UserCog,
   CalendarClock,
   CalendarOff,
   CalendarCheck,
@@ -42,6 +43,7 @@ export function DashboardLayout() {
       { to: ROUTES.dashboardServices, label: "Serviços", icon: Scissors },
       { to: ROUTES.dashboardProducts, label: "Produtos", icon: Package },
       { to: ROUTES.dashboardContacts, label: "Contatos", icon: MailQuestion },
+      { to: ROUTES.dashboardUsers, label: "Usuários", icon: UserCog },
       { to: ROUTES.dashboardTeam, label: "Equipe", icon: Users },
       { to: ROUTES.dashboardRatings, label: "Avaliações", icon: Star },
     );

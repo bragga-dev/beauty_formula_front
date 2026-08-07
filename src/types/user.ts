@@ -11,6 +11,11 @@ export interface UserOut {
   created_at: string;
 }
 
+export interface UserAdminOut extends UserOut {
+  display_name?: string | null;
+  photo_url?: string | null;
+}
+
 export type Gender = "male" | "female" | "other";
 
 export interface ClientProfile {

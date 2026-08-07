@@ -26,6 +26,7 @@ import { ProfilePage } from "@/pages/dashboard/ProfilePage";
 import { DashboardServicesPage } from "@/pages/dashboard/DashboardServicesPage";
 import { DashboardProductsPage } from "@/pages/dashboard/DashboardProductsPage";
 import { DashboardContactsPage } from "@/pages/dashboard/DashboardContactsPage";
+import { DashboardUsersPage } from "@/pages/dashboard/DashboardUsersPage";
 import { DashboardTeamPage } from "@/pages/dashboard/DashboardTeamPage";
 import { DashboardAppointmentsPage } from "@/pages/dashboard/DashboardAppointmentsPage";
 import { DashboardAppointmentAdminDetailPage } from "@/pages/dashboard/DashboardAppointmentAdminDetailPage";
@@ -77,6 +78,7 @@ export function AppRouter() {
             <Route path={ROUTES.dashboardServices} element={<DashboardServicesPage />} />
             <Route path={ROUTES.dashboardProducts} element={<DashboardProductsPage />} />
             <Route path={ROUTES.dashboardContacts} element={<DashboardContactsPage />} />
+            <Route path={ROUTES.dashboardUsers} element={<DashboardUsersPage />} />
             <Route path={ROUTES.dashboardTeam} element={<DashboardTeamPage />} />
             <Route path={ROUTES.dashboardAppointments} element={<DashboardAppointmentsPage />} />
             <Route path="/painel/agendamentos/:appointmentId" element={<DashboardAppointmentAdminDetailPage />} />
