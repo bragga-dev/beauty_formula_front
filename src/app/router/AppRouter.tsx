@@ -9,6 +9,7 @@ import { ServicesPage } from "@/pages/ServicesPage";
 import { ServiceDetailPage } from "@/pages/ServiceDetailPage";
 import { TeamPage } from "@/pages/TeamPage";
 import { TeamMemberDetailPage } from "@/pages/TeamMemberDetailPage";
+import { AllRatingsPage } from "@/pages/AllRatingsPage";
 import { ContactPage } from "@/pages/ContactPage";
 import { BookingPage } from "@/pages/BookingPage";
 
@@ -47,6 +48,7 @@ export function AppRouter() {
           <Route path="/servicos/:serviceId" element={<ServiceDetailPage />} />
           <Route path={ROUTES.team} element={<TeamPage />} />
           <Route path="/nosso-time/:employeeId" element={<TeamMemberDetailPage />} />
+          <Route path={ROUTES.ratings} element={<AllRatingsPage />} />
           <Route path={ROUTES.contact} element={<ContactPage />} />
           <Route path={ROUTES.booking} element={<BookingPage />} />
         </Route>

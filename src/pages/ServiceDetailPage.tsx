@@ -5,9 +5,9 @@ import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Button } from "@/components/ui/Button";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { ErrorState } from "@/components/feedback/ErrorState";
-import { ReviewList } from "@/features/ratings/ReviewList";
+import { RatingBreakdown } from "@/features/ratings/RatingBreakdown";
 import { useServiceDetail } from "@/hooks/useServices";
-import { useServiceRatingSummary, useServiceRatings } from "@/hooks/useRatings";
+import { useServiceRatingSummary } from "@/hooks/useRatings";
 import { formatCurrencyBRL, formatDuration } from "@/utils/format";
 import { ROUTES } from "@/constants/routes";
 
@@ -16,7 +16,6 @@ export function ServiceDetailPage() {
   const navigate = useNavigate();
   const { data: service, isLoading, isError, refetch } = useServiceDetail(serviceId);
   const { data: ratingSummary } = useServiceRatingSummary(serviceId);
-  const { data: ratingsPage, isLoading: isLoadingRatings } = useServiceRatings(serviceId);
 
   if (isLoading) {
     return (
@@ -77,18 +76,15 @@ export function ServiceDetailPage() {
         </div>
       </div>
 
-      <div className="mt-14">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl">Avaliações</h2>
-          <RatingStars
-            value={ratingSummary?.average_rating ?? 0}
-            totalReviews={ratingSummary?.total_reviews}
-            size="sm"
-          />
-        </div>
-        <div className="mt-5">
-          <ReviewList ratings={ratingsPage?.items} isLoading={isLoadingRatings} emptySubject="este serviço" />
-        </div>
+      <div className="mt-14 max-w-md">
+        <h2 className="text-xl">Avaliações</h2>
+        <RatingBreakdown
+          averageRating={ratingSummary?.average_rating ?? 0}
+          totalReviews={ratingSummary?.total_reviews ?? 0}
+          breakdown={ratingSummary?.breakdown ?? []}
+          seeAllLink={service ? ROUTES.serviceReviews(service.id) : undefined}
+          className="mt-5"
+        />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ratingsService } from "@/services/ratings.service";
-import type { AdminRatingFilters, AverageRatingCreateInput, AverageRatingUpdateInput } from "@/types/rating";
+import type { AdminRatingFilters, AverageRatingCreateInput, AverageRatingUpdateInput, RatingValue } from "@/types/rating";
 
 export function useMyRatings() {
   return useQuery({
@@ -40,6 +40,20 @@ export function useEmployeeRatings(employeeId?: string, page = 1, pageSize = 10)
     queryKey: ["ratings", "employee-list", employeeId, page, pageSize],
     queryFn: () => ratingsService.listForEmployee(employeeId as string, page, pageSize),
     enabled: !!employeeId,
+  });
+}
+
+export interface PublicRatingFilters {
+  serviceId?: string;
+  employeeId?: string;
+  rating?: RatingValue;
+}
+
+/** Todas as avaliações autorizadas (públicas) do salão — página "Todas as Avaliações". */
+export function useAllPublicRatings(filters: PublicRatingFilters, page = 1, pageSize = 12) {
+  return useQuery({
+    queryKey: ["ratings", "all-public", filters, page, pageSize],
+    queryFn: () => ratingsService.listAllPublic(filters, page, pageSize),
   });
 }
 

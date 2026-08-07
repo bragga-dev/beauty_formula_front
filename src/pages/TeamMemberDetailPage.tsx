@@ -1,10 +1,13 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { ArrowLeft, AtSign, CalendarClock } from "lucide-react";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { Pagination } from "@/components/tables/Pagination";
+import { RatingBreakdown } from "@/features/ratings/RatingBreakdown";
 import { ReviewList } from "@/features/ratings/ReviewList";
 import { formatCurrencyBRL, formatDuration, initials } from "@/utils/format";
 import { useTeamMember } from "@/hooks/useTeam";
@@ -15,9 +18,10 @@ import { Scissors } from "lucide-react";
 export function TeamMemberDetailPage() {
   const { employeeId } = useParams<{ employeeId: string }>();
   const navigate = useNavigate();
+  const [reviewsPage, setReviewsPage] = useState(1);
   const { data: employee, isLoading, isError, refetch } = useTeamMember(employeeId);
-  const { data: ratingSummary } = useEmployeeRatingSummary(employeeId);
-  const { data: ratingsPage, isLoading: isLoadingRatings } = useEmployeeRatings(employeeId);
+  const { data: ratingSummary, isLoading: isLoadingRatingSummary } = useEmployeeRatingSummary(employeeId);
+  const { data: reviews, isLoading: isLoadingReviews } = useEmployeeRatings(employeeId, reviewsPage, 6);
 
   if (isLoading) {
     return (
@@ -104,16 +108,28 @@ export function TeamMemberDetailPage() {
       </div>
 
       <div className="mt-12">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl">Avaliações</h2>
-          <RatingStars
-            value={ratingSummary?.average_rating ?? 0}
-            totalReviews={ratingSummary?.total_reviews}
-            size="sm"
-          />
-        </div>
-        <div className="mt-5">
-          <ReviewList ratings={ratingsPage?.items} isLoading={isLoadingRatings} emptySubject="este profissional" />
+        <h2 className="text-xl">Avaliações</h2>
+        <div className="mt-5 grid gap-8 lg:grid-cols-[300px_1fr]">
+          <div className="rounded-card border border-ink-700 bg-ink-800/60 p-5 lg:sticky lg:top-24 lg:self-start">
+            {isLoadingRatingSummary ? (
+              <Skeleton className="h-40 w-full" />
+            ) : (
+              <RatingBreakdown
+                averageRating={ratingSummary?.average_rating ?? 0}
+                totalReviews={ratingSummary?.total_reviews ?? 0}
+                breakdown={ratingSummary?.breakdown ?? []}
+              />
+            )}
+          </div>
+
+          <div>
+            <ReviewList ratings={reviews?.items} isLoading={isLoadingReviews} emptySubject="este profissional" />
+            {reviews && reviews.pages > 1 && (
+              <div className="mt-6">
+                <Pagination page={reviews.page} pages={reviews.pages} onChange={setReviewsPage} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

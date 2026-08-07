@@ -5,6 +5,9 @@ export const ROUTES = {
   serviceDetail: (id: string) => `/servicos/${id}`,
   team: "/nosso-time",
   teamDetail: (id: string) => `/nosso-time/${id}`,
+  ratings: "/avaliacoes",
+  serviceReviews: (id: string) => `/avaliacoes?service=${id}`,
+  teamMemberReviews: (id: string) => `/avaliacoes?employee=${id}`,
   contact: "/contato",
 
   login: "/entrar",

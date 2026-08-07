@@ -7,6 +7,7 @@ import type {
   AverageRatingPrivateOut,
   AverageRatingUpdateInput,
   RatingSummaryOut,
+  RatingValue,
 } from "@/types/rating";
 
 /**
@@ -48,6 +49,24 @@ export const ratingsService = {
 
   getEmployeeSummary: (employeeId: string) =>
     api.get<RatingSummaryOut>(`/average-ratings/employee/${employeeId}/summary`).then((r) => r.data),
+
+  /** Todas as avaliações autorizadas (públicas), com filtros opcionais — página "Todas as Avaliações". */
+  listAllPublic: (
+    filters: { serviceId?: string; employeeId?: string; rating?: RatingValue },
+    page = 1,
+    page_size = 12,
+  ) =>
+    api
+      .get<PageOut<AverageRatingOut>>("/average-ratings/all", {
+        params: {
+          page,
+          page_size,
+          service_id: filters.serviceId || undefined,
+          employee_id: filters.employeeId || undefined,
+          rating: filters.rating || undefined,
+        },
+      })
+      .then((r) => r.data),
 
   // ═══════════════════════════════════════════════════════════════
   // Admin / Funcionário — moderação

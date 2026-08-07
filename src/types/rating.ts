@@ -49,11 +49,19 @@ export interface AverageRatingUpdateInput {
   comment?: string;
 }
 
+/** Uma linha da distribuição de notas (ex: 5 estrelas, 87%, 2208 avaliações). */
+export interface RatingBreakdownItem {
+  rating: RatingValue;
+  count: number;
+  percentage: number;
+}
+
 /** Média/total de avaliações de um serviço ou funcionário — somente leitura. */
 export interface RatingSummaryOut {
   average_rating: string;
   total_reviews: number;
   updated_at?: string | null;
+  breakdown: RatingBreakdownItem[];
 }
 
 /**
