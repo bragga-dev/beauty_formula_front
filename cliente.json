@@ -1,0 +1,41 @@
+{
+  "object": "list",
+  "hasMore": false,
+  "totalCount": 1,
+  "limit": 10,
+  "offset": 0,
+  "data": [
+    {
+      "object": "customer",
+      "id": "cus_000008607980",
+      "dateCreated": "2026-08-07",
+      "name": "Fórmula da Beleza",
+      "email": "bragawebdevelopment@gmail.com",
+      "company": null,
+      "phone": null,
+      "mobilePhone": "73981683277",
+      "address": "Rua José Gonçalves Pereira",
+      "addressNumber": "666",
+      "complement": "Castelo",
+      "province": "Cansanção",
+      "postalCode": "45201347",
+      "cpfCnpj": "47493032000130",
+      "personType": "JURIDICA",
+      "deleted": false,
+      "additionalEmails": null,
+      "externalReference": null,
+      "notificationDisabled": false,
+      "observations": null,
+      "municipalInscription": null,
+      "stateInscription": null,
+      "canDelete": true,
+      "cannotBeDeletedReason": null,
+      "canEdit": true,
+      "cannotEditReason": null,
+      "city": 9144,
+      "cityName": "Jequié",
+      "state": "BA",
+      "country": "Brasil"
+    }
+  ]
+}

@@ -42,6 +42,7 @@ export function DashboardMyTimeOffPage() {
     try {
       if (mode === "recurring") {
         await create.mutateAsync({
+          mode: "recurring",
           block_type: form.block_type,
           weekday: Number(form.weekday),
           start_time: form.start_time,
@@ -49,6 +50,7 @@ export function DashboardMyTimeOffPage() {
         });
       } else {
         await create.mutateAsync({
+          mode: "punctual",
           block_type: form.block_type,
           start_datetime: new Date(form.start_datetime).toISOString(),
           end_datetime: new Date(form.end_datetime).toISOString(),
