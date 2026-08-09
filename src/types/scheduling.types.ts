@@ -14,13 +14,13 @@ export const SCHEDULING_STATUS_LABELS: Record<SchedulingStatus, string> = {
 
 export const SCHEDULING_STATUS_BADGE: Record<
   SchedulingStatus,
-  "neutral" | "success" | "danger" | "gold" | "crimson"
+  "neutral" | "success" | "danger" | "gold" | "crimson" | "info" | "purple" | "orange"
 > = {
-  confirmed: "crimson",
+  confirmed: "info",
   completed: "success",
   canceled: "danger",
-  no_show: "neutral",
-  rescheduled: "gold",
+  no_show: "purple",
+  rescheduled: "orange",
 };
 
 /** Filtro usado na listagem — inclui "all" além dos status reais da API. */
