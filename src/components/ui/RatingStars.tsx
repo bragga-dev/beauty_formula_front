@@ -27,9 +27,11 @@ interface RatingStarsProps {
 }
 
 /**
- * Exibe a média de avaliações em estrelas douradas (preenchimento
- * fracionário via overlay recortado), seguindo a mesma identidade visual
- * do seletor de estrelas do modal de avaliação (`gold-400` / `ink-600`).
+ * Exibe a nota em estrelas douradas, com preenchimento calculado
+ * individualmente por estrela (0 a 1 cada), seguindo a mesma identidade
+ * visual do seletor de estrelas do modal de avaliação (`gold-400` /
+ * `ink-600`). O recorte por estrela evita qualquer distorção de proporção
+ * causada pelo espaçamento (`gap`) entre os ícones.
  *
  * Quando não há avaliações ainda (`totalReviews === 0` ou ausente),
  * mostra as estrelas vazias com um texto neutro no lugar da nota.
@@ -38,25 +40,31 @@ export function RatingStars({ value, totalReviews, size = "sm", showValue = true
   const numericValue = typeof value === "string" ? Number(value) : value;
   const hasReviews = typeof totalReviews === "number" ? totalReviews > 0 : numericValue > 0;
   const clamped = Math.max(0, Math.min(5, hasReviews ? numericValue : 0));
-  const fillPercent = (clamped / 5) * 100;
   const starClass = STAR_SIZE[size];
 
   return (
     <div className={cn("inline-flex items-center gap-1.5", className)}>
-      <div className="relative inline-flex shrink-0">
-        <div className="flex gap-0.5 text-ink-600">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} className={starClass} />
-          ))}
-        </div>
-        <div
-          className="absolute inset-0 flex gap-0.5 overflow-hidden text-gold-400"
-          style={{ width: `${fillPercent}%` }}
-        >
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} className={cn(starClass, "fill-gold-400")} />
-          ))}
-        </div>
+      <div className="flex gap-0.5 text-ink-600">
+        {Array.from({ length: 5 }).map((_, i) => {
+          // Preenchimento individual de cada estrela (0 a 1), calculado
+          // isoladamente por índice — evita que o gap entre ícones seja
+          // contabilizado na largura recortada de um overlay único, que
+          // distorcia a proporção visível (ex: nota 3 aparentando 4/5).
+          const starFill = Math.max(0, Math.min(1, clamped - i));
+          return (
+            <div key={i} className="relative shrink-0">
+              <Star className={starClass} />
+              {starFill > 0 && (
+                <div
+                  className="absolute inset-0 overflow-hidden text-gold-400"
+                  style={{ width: starFill >= 1 ? "100%" : `${starFill * 100}%` }}
+                >
+                  <Star className={cn(starClass, "fill-gold-400")} />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {showValue && (

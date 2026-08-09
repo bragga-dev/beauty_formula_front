@@ -62,7 +62,11 @@ export function DashboardAppointmentDetailPage() {
 
   const employeeName =
     [scheduling.employee.first_name, scheduling.employee.last_name].filter(Boolean).join(" ") || "Profissional";
-  const existingRating = myRatings?.items.find((r) => r.scheduling_id === scheduling.id);
+  // Mesma regra do que na listagem: unicidade agora é por
+  // serviço+funcionário, não por agendamento.
+  const existingRating = myRatings?.items.find(
+    (r) => r.service.id === scheduling.service.id && r.employee.id === scheduling.employee.id,
+  );
 
   return (
     <div className="mx-auto max-w-2xl">

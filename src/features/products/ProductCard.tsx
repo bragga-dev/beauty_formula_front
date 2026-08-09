@@ -31,9 +31,6 @@ export function ProductCard({ product }: { product: ProductOut }) {
             <h3 className="font-display text-base uppercase tracking-wide text-bone-50">{product.name}</h3>
             <ArrowUpRight className="h-4 w-4 shrink-0 text-gold-400 opacity-0 transition-opacity group-hover:opacity-100" />
           </div>
-          {product.description && (
-            <p className="mt-2 line-clamp-2 text-sm text-bone-500">{product.description}</p>
-          )}
           <div className="mt-4 flex items-center justify-between border-t border-ink-700 pt-4">
             {outOfStock ? (
               <Badge variant="neutral">Sem estoque</Badge>
