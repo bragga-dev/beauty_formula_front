@@ -12,6 +12,7 @@ import { profileService } from "@/services/profile.service";
 import { initials } from "@/utils/format";
 import { ChangePasswordModal } from "@/features/profile/ChangePasswordModal";
 import type { ApiError } from "@/types/common";
+import type { Gender } from "@/types/user";
 
 export function ProfilePage() {
   const { me, updateProfile } = useAuth();
@@ -20,6 +21,11 @@ export function ProfilePage() {
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   const isEmployee = me?.user.role === "employee";
+  // Admin não tem perfil de cliente nem de funcionário — não existe
+  // dado (nome, foto, gênero...) nem endpoint no back pra editar isso.
+  // Mostrar esse formulário pra ele só resulta em erro de autorização
+  // ao salvar, então nem tentamos.
+  const isAdmin = me?.user.role === "admin";
   const profile = me?.client ?? me?.employee;
 
   const [form, setForm] = useState({
@@ -29,7 +35,7 @@ export function ProfilePage() {
     phone: "",
     instagram: "",
     birth_date: "",
-    gender: "male" as "male" | "female" | "other",
+    gender: "Masculino" as Gender,
     bio: "",
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -112,16 +118,20 @@ export function ProfilePage() {
               fallback={initials(form.first_name, form.last_name)}
               size="xl"
             />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploadingPhoto}
-              aria-label="Alterar foto"
-              className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border border-ink-600 bg-ink-800 text-gold-400 hover:bg-ink-700"
-            >
-              <Camera className="h-4 w-4" />
-            </button>
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+            {!isAdmin && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingPhoto}
+                  aria-label="Alterar foto"
+                  className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border border-ink-600 bg-ink-800 text-gold-400 hover:bg-ink-700"
+                >
+                  <Camera className="h-4 w-4" />
+                </button>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+              </>
+            )}
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm text-bone-100">{me?.user.email}</p>
@@ -130,65 +140,72 @@ export function ProfilePage() {
         </CardHeader>
 
         <CardBody>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+          {isAdmin ? (
+            <p className="text-sm text-bone-500">
+              Contas de administrador ainda não têm edição de dados pessoais — apenas a senha pode ser
+              alterada, na seção abaixo.
+            </p>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input
+                  label="Nome"
+                  value={form.first_name}
+                  onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))}
+                />
+                <Input
+                  label="Sobrenome"
+                  value={form.last_name}
+                  onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))}
+                />
+              </div>
               <Input
-                label="Nome"
-                value={form.first_name}
-                onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))}
+                label="Nome de usuário"
+                value={form.username}
+                onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
               />
-              <Input
-                label="Sobrenome"
-                value={form.last_name}
-                onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))}
-              />
-            </div>
-            <Input
-              label="Nome de usuário"
-              value={form.username}
-              onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-            />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Input
-                label="Telefone"
-                value={form.phone}
-                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-              />
-              <Input
-                label="Instagram"
-                value={form.instagram}
-                onChange={(e) => setForm((f) => ({ ...f, instagram: e.target.value }))}
-              />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Input
-                label="Data de nascimento"
-                type="date"
-                value={form.birth_date}
-                onChange={(e) => setForm((f) => ({ ...f, birth_date: e.target.value }))}
-              />
-              <Select
-                label="Gênero"
-                value={form.gender}
-                onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value as typeof form.gender }))}
-              >
-                <option value="male">Masculino</option>
-                <option value="female">Feminino</option>
-                <option value="other">Outro</option>
-              </Select>
-            </div>
-            {isEmployee && (
-              <Textarea
-                label="Bio"
-                placeholder="Conte um pouco sobre sua experiência..."
-                value={form.bio}
-                onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
-              />
-            )}
-            <Button type="submit" isLoading={isSaving}>
-              <Save className="h-4 w-4" /> Salvar alterações
-            </Button>
-          </form>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input
+                  label="Telefone"
+                  value={form.phone}
+                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                />
+                <Input
+                  label="Instagram"
+                  value={form.instagram}
+                  onChange={(e) => setForm((f) => ({ ...f, instagram: e.target.value }))}
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input
+                  label="Data de nascimento"
+                  type="date"
+                  value={form.birth_date}
+                  onChange={(e) => setForm((f) => ({ ...f, birth_date: e.target.value }))}
+                />
+                <Select
+                  label="Gênero"
+                  value={form.gender}
+                  onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value as Gender }))}
+                >
+                  <option value="Masculino">Masculino</option>
+                  <option value="Feminino">Feminino</option>
+                  <option value="Outro">Outro</option>
+                </Select>
+              </div>
+              {isEmployee && (
+                <Textarea
+                  label="Bio"
+                  placeholder="Conte um pouco sobre sua experiência..."
+                  value={form.bio}
+                  onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
+                />
+              )}
+              <Button type="submit" isLoading={isSaving}>
+                <Save className="h-4 w-4" /> Salvar alterações
+              </Button>
+            </form>
+          )}
         </CardBody>
       </Card>
 

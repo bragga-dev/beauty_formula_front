@@ -53,7 +53,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               className={`flex items-start gap-3 rounded-card border bg-ink-800/95 p-4 shadow-elevated backdrop-blur ${STYLES[toast.variant]}`}
             >
               <Icon className="mt-0.5 h-5 w-5 shrink-0" />
-              <p className="flex-1 text-sm text-bone-100">{toast.message}</p>
+              <p className="flex-1 text-sm text-bone-100">{String(toast.message)}</p>
               <button
                 onClick={() => dismiss(toast.id)}
                 aria-label="Fechar aviso"
