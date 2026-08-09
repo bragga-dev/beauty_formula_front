@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Trash2, Eye, Search, MailQuestion } from "lucide-react";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { MobileRowCard } from "@/components/tables/MobileRowCard";
 import { Pagination } from "@/components/tables/Pagination";
@@ -28,11 +29,12 @@ const STATUS_VARIANT: Record<ContactStatus, "neutral" | "success" | "danger" | "
 export function DashboardContactsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 400);
   const [statusFilter, setStatusFilter] = useState<ContactStatus | "">("");
   const [subjectFilter, setSubjectFilter] = useState<ContactSubject | "">("");
 
   const { data, isLoading, isError, refetch } = useAdminContacts(page, 10, {
-    search,
+    search: debouncedSearch,
     status: statusFilter,
     subject: subjectFilter,
   });

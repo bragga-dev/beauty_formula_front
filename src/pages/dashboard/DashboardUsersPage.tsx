@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, ShieldCheck, Power, PowerOff, Search, Users as UsersIcon } from "lucide-react";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { MobileRowCard } from "@/components/tables/MobileRowCard";
 import { Pagination } from "@/components/tables/Pagination";
@@ -33,11 +34,12 @@ const ROLE_VARIANT: Record<UserRole, "gold" | "crimson" | "neutral"> = {
 export function DashboardUsersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 400);
   const [roleFilter, setRoleFilter] = useState<UserRole | "">("");
   const [statusFilter, setStatusFilter] = useState<"" | "true" | "false">("");
 
   const { data, isLoading, isError, refetch } = useAdminUsers(page, 10, {
-    search,
+    search: debouncedSearch,
     role: roleFilter,
     is_active: statusFilter === "" ? "" : statusFilter === "true",
   });
