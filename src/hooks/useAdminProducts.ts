@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { productsService } from "@/services/products.service";
-import type { ProductCreateInput, ProductUpdateInput } from "@/types/products";
+import type { PageOut } from "@/types/common";
+import type { ProductCreateInput, ProductPrivateOut, ProductUpdateInput } from "@/types/products";
 
 export function useAdminProducts(page: number, pageSize = 10) {
   return useQuery({
@@ -30,15 +31,35 @@ export function useProductMutations() {
     onSuccess: invalidate,
   });
 
-  const activate = useMutation({
-    mutationFn: (id: string) => productsService.activate(id),
-    onSuccess: invalidate,
-  });
+  // Toggle otimista: atualiza `is_active` no cache antes da resposta do
+  // servidor chegar, pra UI reagir na hora. Se a request falhar, reverte
+  // pro estado anterior (snapshot salvo em onMutate).
+  function useToggleActive(mutationFn: (id: string) => Promise<ProductPrivateOut>, nextValue: boolean) {
+    return useMutation({
+      mutationFn,
+      onMutate: async (id: string) => {
+        await queryClient.cancelQueries({ queryKey: ["admin", "products"] });
+        const previous = queryClient.getQueriesData<PageOut<ProductPrivateOut>>({ queryKey: ["admin", "products"] });
 
-  const deactivate = useMutation({
-    mutationFn: (id: string) => productsService.deactivate(id),
-    onSuccess: invalidate,
-  });
+        queryClient.setQueriesData<PageOut<ProductPrivateOut>>({ queryKey: ["admin", "products"] }, (old) => {
+          if (!old || !Array.isArray(old.items)) return old;
+          return {
+            ...old,
+            items: old.items.map((item) => (item.id === id ? { ...item, is_active: nextValue } : item)),
+          };
+        });
+
+        return { previous };
+      },
+      onError: (_err, _id, context) => {
+        context?.previous.forEach(([key, data]) => queryClient.setQueryData(key, data));
+      },
+      onSettled: invalidate,
+    });
+  }
+
+  const activate = useToggleActive(productsService.activate, true);
+  const deactivate = useToggleActive(productsService.deactivate, false);
 
   return { create, update, remove, activate, deactivate };
 }

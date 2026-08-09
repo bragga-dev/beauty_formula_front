@@ -1,6 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ratingsService } from "@/services/ratings.service";
-import type { AdminRatingFilters, AverageRatingCreateInput, AverageRatingUpdateInput, RatingValue } from "@/types/rating";
+import type { PageOut } from "@/types/common";
+import type {
+  AdminRatingFilters,
+  AverageRatingCreateInput,
+  AverageRatingPrivateOut,
+  AverageRatingUpdateInput,
+  RatingValue,
+} from "@/types/rating";
 
 export function useMyRatings() {
   return useQuery({
@@ -110,15 +117,39 @@ export function useRatingModerationMutations() {
     queryClient.invalidateQueries({ queryKey: ["ratings"] });
   };
 
-  const authorize = useMutation({
-    mutationFn: (id: string) => ratingsService.authorize(id),
-    onSuccess: invalidate,
-  });
+  // Toggle otimista: atualiza `is_authorized` no cache antes da resposta
+  // do servidor, pra UI reagir na hora. Reverte se a request falhar.
+  function useToggleAuthorized(mutationFn: (id: string) => Promise<AverageRatingPrivateOut>, nextValue: boolean) {
+    return useMutation({
+      mutationFn,
+      onMutate: async (id: string) => {
+        await queryClient.cancelQueries({ queryKey: ["ratings", "moderation"] });
+        const previous = queryClient.getQueriesData<PageOut<AverageRatingPrivateOut>>({
+          queryKey: ["ratings", "moderation"],
+        });
 
-  const revoke = useMutation({
-    mutationFn: (id: string) => ratingsService.revoke(id),
-    onSuccess: invalidate,
-  });
+        queryClient.setQueriesData<PageOut<AverageRatingPrivateOut>>(
+          { queryKey: ["ratings", "moderation"] },
+          (old) => {
+            if (!old || !Array.isArray(old.items)) return old;
+            return {
+              ...old,
+              items: old.items.map((item) => (item.id === id ? { ...item, is_authorized: nextValue } : item)),
+            };
+          },
+        );
+
+        return { previous };
+      },
+      onError: (_err, _id, context) => {
+        context?.previous.forEach(([key, data]) => queryClient.setQueryData(key, data));
+      },
+      onSettled: invalidate,
+    });
+  }
+
+  const authorize = useToggleAuthorized(ratingsService.authorize, true);
+  const revoke = useToggleAuthorized(ratingsService.revoke, false);
 
   const remove = useMutation({
     mutationFn: (id: string) => ratingsService.removeAsAdmin(id),
