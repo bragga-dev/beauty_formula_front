@@ -86,24 +86,17 @@ export function ProductFormModal({ open, onClose, onSubmit, product, isSubmittin
             required
           />
         </div>
-        {!product && (
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-bone-500">
-              Imagem
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-              className="block w-full text-sm text-bone-400 file:mr-4 file:rounded-card file:border-0 file:bg-ink-700 file:px-4 file:py-2 file:text-xs file:uppercase file:text-bone-100 hover:file:bg-ink-600"
-            />
-          </div>
-        )}
-        {product && (
-          <p className="text-xs text-bone-600">
-            A imagem não pode ser alterada após a criação do produto.
-          </p>
-        )}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-bone-500">
+            {product ? "Trocar imagem (opcional)" : "Imagem"}
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+            className="block w-full text-sm text-bone-400 file:mr-4 file:rounded-card file:border-0 file:bg-ink-700 file:px-4 file:py-2 file:text-xs file:uppercase file:text-bone-100 hover:file:bg-ink-600"
+          />
+        </div>
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
             Cancelar

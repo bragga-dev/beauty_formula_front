@@ -18,7 +18,7 @@ import type { ApiError } from "@/types/common";
 export function DashboardProductsPage() {
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, refetch } = useAdminProducts(page);
-  const { create, update, remove, activate, deactivate } = useProductMutations();
+  const { create, update, updateImage, remove, activate, deactivate } = useProductMutations();
   const { push } = useToast();
 
   const [formOpen, setFormOpen] = useState(false);
@@ -39,6 +39,9 @@ export function DashboardProductsPage() {
     try {
       if (editingProduct) {
         await update.mutateAsync({ id: editingProduct.id, payload });
+        if (image) {
+          await updateImage.mutateAsync({ id: editingProduct.id, image });
+        }
       } else {
         await create.mutateAsync({ payload, image });
       }
@@ -196,7 +199,7 @@ export function DashboardProductsPage() {
         onClose={() => setFormOpen(false)}
         onSubmit={handleFormSubmit}
         product={editingProduct}
-        isSubmitting={create.isPending || update.isPending}
+        isSubmitting={create.isPending || update.isPending || updateImage.isPending}
       />
 
       <ConfirmDialog

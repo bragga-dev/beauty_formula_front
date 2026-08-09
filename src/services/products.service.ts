@@ -30,6 +30,16 @@ export const productsService = {
   update: (productId: string, payload: ProductUpdateInput) =>
     api.patch<ProductOut>(`/products/update-product/${productId}`, payload).then((r) => r.data),
 
+  updateImage: (productId: string, image: File) => {
+    const form = new FormData();
+    form.append("image", image);
+    return api
+      .patch<ProductOut>(`/products/update-image-product/${productId}`, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((r) => r.data);
+  },
+
   remove: (productId: string) => api.delete(`/products/delete-product/${productId}`),
 
   activate: (productId: string) =>

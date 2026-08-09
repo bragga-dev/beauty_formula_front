@@ -26,6 +26,12 @@ export function useProductMutations() {
     onSuccess: invalidate,
   });
 
+  const updateImage = useMutation({
+    mutationFn: ({ id, image }: { id: string; image: File }) =>
+      productsService.updateImage(id, image),
+    onSuccess: invalidate,
+  });
+
   const remove = useMutation({
     mutationFn: (id: string) => productsService.remove(id),
     onSuccess: invalidate,
@@ -61,5 +67,5 @@ export function useProductMutations() {
   const activate = useToggleActive(productsService.activate, true);
   const deactivate = useToggleActive(productsService.deactivate, false);
 
-  return { create, update, remove, activate, deactivate };
+  return { create, update, updateImage, remove, activate, deactivate };
 }
