@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { Pagination } from "@/components/tables/Pagination";
 import { useMySchedulings, useSchedulingMutations } from "@/hooks/useScheduling";
 import { useMyRatings } from "@/hooks/useRatings";
+import { useMyPayments } from "@/hooks/usePayment";
 import { CancelAppointmentModal } from "@/features/appointments/CancelAppointmentModal";
 import { RateAppointmentModal } from "@/features/ratings/RateAppointmentModal";
 import { useToast } from "@/app/providers/toast-context";
@@ -23,6 +24,7 @@ import {
   type SchedulingFilter,
   type SchedulingOut,
 } from "@/types/scheduling.types";
+import { PAYMENT_STATUS_BADGE, PAYMENT_STATUS_LABELS } from "@/types/payment";
 import type { ApiError } from "@/types/common";
 
 const FILTERS: { value: SchedulingFilter; label: string }[] = [
@@ -45,6 +47,11 @@ export function DashboardMyAppointmentsPage() {
   // trocar "Avaliar" por "Ver avaliação" nos concluídos.
   const { data: myRatings } = useMyRatings();
   const ratingBySchedulingId = new Map((myRatings?.items ?? []).map((r) => [r.scheduling_id, r]));
+
+  // Mesma estratégia: um lote de cobranças pra exibir o status de
+  // pagamento direto no card, sem uma chamada por agendamento.
+  const { data: myPayments } = useMyPayments();
+  const paymentBySchedulingId = new Map((myPayments?.items ?? []).map((p) => [p.scheduling_id, p]));
 
   const [cancelling, setCancelling] = useState<SchedulingOut | null>(null);
   const [rating, setRating] = useState<SchedulingOut | null>(null);
@@ -109,6 +116,7 @@ export function DashboardMyAppointmentsPage() {
           <div className="grid gap-3 sm:grid-cols-2">
             {data?.items.map((scheduling: SchedulingOut) => {
               const existingRating = ratingBySchedulingId.get(scheduling.id);
+              const payment = paymentBySchedulingId.get(scheduling.id);
               return (
                 <Card key={scheduling.id} className="flex flex-col gap-4 p-5">
                   <div className="flex items-start justify-between gap-3">
@@ -134,6 +142,11 @@ export function DashboardMyAppointmentsPage() {
                       {formatTime(scheduling.scheduled_time)} – {formatTime(getSchedulingEndTime(scheduling))}
                     </span>
                     <span className="text-gold-400">{formatCurrencyBRL(scheduling.price_at_booking)}</span>
+                    {payment && (
+                      <Badge variant={PAYMENT_STATUS_BADGE[payment.status]}>
+                        {PAYMENT_STATUS_LABELS[payment.status]}
+                      </Badge>
+                    )}
                   </div>
 
                   <div className="mt-auto flex flex-wrap items-center justify-end gap-2 border-t border-ink-700 pt-4">

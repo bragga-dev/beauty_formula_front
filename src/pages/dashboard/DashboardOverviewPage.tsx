@@ -169,17 +169,8 @@ export function DashboardOverviewPage() {
         <>
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <StatCard icon={CalendarCheck} label="Meus agendamentos" value={myAppointments.data?.total ?? 0} isLoading={myAppointments.isLoading} to={ROUTES.dashboardMyAppointments} />
-          </div>
-          <Card className="mt-5 p-8 text-center">
-            <CalendarClock className="mx-auto h-8 w-8 text-gold-400" />
-            <p className="mt-3 text-bone-300">Pronto para o próximo corte?</p>
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-              <ButtonLink to={ROUTES.booking}>Agendar horário</ButtonLink>
-              <ButtonLink to={ROUTES.dashboardMyAppointments} variant="outline">
-                Meus agendamentos
-              </ButtonLink>
-            </div>
-          </Card>
+            <StatCard icon={CalendarCheck} label="Meus pagamentos" value={myAppointments.data?.total ?? 0} isLoading={myAppointments.isLoading} to={ROUTES.dashboardMyAppointments} />
+          </div>      
         </>
       )}
     </div>

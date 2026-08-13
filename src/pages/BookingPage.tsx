@@ -23,11 +23,13 @@ import { useCalendarAvailability, type AggregatedSlot } from "@/hooks/useCalenda
 import { useSchedulingMutations } from "@/hooks/useScheduling";
 import { useAuth } from "@/app/providers/auth-context";
 import { useToast } from "@/app/providers/toast-context";
+import { PaymentPanel } from "@/features/payment/PaymentPanel";
 import { formatCurrencyBRL, formatDuration, formatTime, initials } from "@/utils/format";
 import { cn } from "@/utils/cn";
 import { ROUTES } from "@/constants/routes";
 import type { ServiceOut } from "@/types/service";
 import type { EmployeeTeamOut } from "@/types/employee";
+import type { SchedulingOut } from "@/types/scheduling.types";
 import type { ApiError } from "@/types/common";
 
 // Janela de dias mostrada no calendário — os 30 dias inteiros de uma vez
@@ -70,6 +72,7 @@ export function BookingPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<{ start: string; end: string } | null>(null);
   const [confirmedAt, setConfirmedAt] = useState<string | null>(null);
+  const [createdScheduling, setCreatedScheduling] = useState<SchedulingOut | null>(null);
 
   const preselectServiceId = searchParams.get("service");
   const preselectEmployeeId = searchParams.get("employee");
@@ -224,13 +227,14 @@ export function BookingPage() {
   async function handleConfirm() {
     if (!selectedService || !selectedEmployee || !selectedSlot) return;
     try {
-      await create.mutateAsync({
+      const created = await create.mutateAsync({
         service_id: selectedService.id,
         employee_id: selectedEmployee.id,
         scheduled_time: selectedSlot.start,
       });
+      setCreatedScheduling(created);
       setConfirmedAt(selectedSlot.start);
-      push("Agendamento confirmado!", "success");
+      push("Agendamento Criado!", "success");
     } catch (err) {
       push((err as ApiError).detail as string, "error");
     }
@@ -438,30 +442,31 @@ export function BookingPage() {
           {step === 4 && selectedSlot && (
             <div className="space-y-4">
               {confirmedAt ? (
-                <div className="flex items-start gap-3 rounded-card border border-success-500/30 bg-success-500/10 p-4 text-sm text-bone-200">
-                  <CheckCircle2 className="h-5 w-5 shrink-0 text-success-500" />
+                <div className="flex items-start gap-3 rounded-card border border-gold-400/30 bg-gold-400/10 p-4 text-sm text-bone-200">
+                  <CheckCircle2 className="h-5 w-5 shrink-0 text-gold-400" />
                   <div>
                     <p className="font-display text-sm uppercase tracking-wide text-bone-50">
-                      Agendamento confirmado!
+                      Agendamento criado!
                     </p>
                     <p className="mt-1 text-bone-400">
-                      Te esperamos {formatTime(confirmedAt)} do dia{" "}
-                      {new Date(confirmedAt).toLocaleDateString("pt-BR")}. Você pode acompanhar seus
-                      agendamentos a qualquer momento no seu painel.
+                      Efetue o pagamento abaixo para confirmar sua vaga às {formatTime(confirmedAt)} do dia{" "}
+                      {new Date(confirmedAt).toLocaleDateString("pt-BR")}. Você também pode pagar depois pelo
+                      seu painel — mas o horário só fica garantido após a confirmação do pagamento.
                     </p>
                   </div>
                 </div>
               ) : !isAuthenticated ? (
                 <div className="flex items-start gap-3 rounded-card border border-gold-400/30 bg-gold-400/5 p-4 text-sm text-bone-300">
                   <Info className="h-5 w-5 shrink-0 text-gold-400" />
-                  <p>Faça login para confirmar seu agendamento — a seleção que você já fez fica guardada.</p>
+                  <p>Faça login para criar seu agendamento — a seleção que você já fez fica guardada.</p>
                 </div>
               ) : (
                 <div className="flex items-start gap-3 rounded-card border border-ink-700 bg-ink-800/60 p-4 text-sm text-bone-300">
                   <Info className="h-5 w-5 shrink-0 text-gold-400" />
-                  <p>Confira o resumo ao lado e confirme seu agendamento.</p>
+                  <p>Confira o resumo ao lado e crie seu agendamento. Ele só é confirmado após o pagamento.</p>
                 </div>
               )}
+              {confirmedAt && createdScheduling && <PaymentPanel schedulingId={createdScheduling.id} />}
               {!confirmedAt && (
                 <Button variant="ghost" size="sm" onClick={backToDateStep}>
                   <ArrowLeft className="h-4 w-4" /> Escolher outro horário
@@ -512,7 +517,7 @@ export function BookingPage() {
               </Button>
             ) : !isAuthenticated && step === 4 ? (
               <Button fullWidth size="lg" className="mt-6" onClick={goToLogin}>
-                Fazer login para confirmar
+                Fazer login para agendar
               </Button>
             ) : (
               <Button
@@ -523,7 +528,7 @@ export function BookingPage() {
                 isLoading={create.isPending}
                 onClick={handleConfirm}
               >
-                Confirmar Agendamento <ArrowRight className="h-4 w-4" />
+                Criar Agendamento <ArrowRight className="h-4 w-4" />
               </Button>
             )}
             {!confirmedAt && (
