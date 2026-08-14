@@ -169,7 +169,6 @@ export function DashboardOverviewPage() {
         <>
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <StatCard icon={CalendarCheck} label="Meus agendamentos" value={myAppointments.data?.total ?? 0} isLoading={myAppointments.isLoading} to={ROUTES.dashboardMyAppointments} />
-            <StatCard icon={CalendarCheck} label="Meus pagamentos" value={myAppointments.data?.total ?? 0} isLoading={myAppointments.isLoading} to={ROUTES.dashboardMyAppointments} />
           </div>      
         </>
       )}

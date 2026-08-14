@@ -41,6 +41,5 @@ export const ROUTES = {
 
   dashboardRatings: "/painel/avaliacoes",
 
-  dashboardMyPayments: "/painel/meus-pagamentos",
   dashboardPayments: "/painel/pagamentos",
 } as const;

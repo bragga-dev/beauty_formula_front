@@ -62,10 +62,7 @@ export function DashboardLayout() {
   }
 
   if (role === "client") {
-    items.push(
-      { to: ROUTES.dashboardMyAppointments, label: "Meus Agendamentos", icon: CalendarCheck },
-      { to: ROUTES.dashboardMyPayments, label: "Meus Pagamentos", icon: CreditCard },
-    );
+    items.push({ to: ROUTES.dashboardMyAppointments, label: "Meus Agendamentos", icon: CalendarCheck });
   }
 
   items.push({ to: ROUTES.dashboardProfile, label: "Meu Perfil", icon: User });

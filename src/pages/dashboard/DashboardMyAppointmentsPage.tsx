@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarClock, Eye, Star, XCircle } from "lucide-react";
+import { CalendarClock, Copy, Eye, ExternalLink, Star, XCircle } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -24,7 +24,12 @@ import {
   type SchedulingFilter,
   type SchedulingOut,
 } from "@/types/scheduling.types";
-import { PAYMENT_STATUS_BADGE, PAYMENT_STATUS_LABELS } from "@/types/payment";
+import {
+  PAYMENT_STATUS_BADGE,
+  PAYMENT_STATUS_LABELS,
+  PAYMENT_BILLING_TYPE_LABELS,
+  type PaymentOut,
+} from "@/types/payment";
 import type { ApiError } from "@/types/common";
 
 const FILTERS: { value: SchedulingFilter; label: string }[] = [
@@ -49,8 +54,9 @@ export function DashboardMyAppointmentsPage() {
   const { data: myRatings } = useMyRatings();
   const ratingBySchedulingId = new Map((myRatings?.items ?? []).map((r) => [r.scheduling_id, r]));
 
-  // Mesma estratégia: um lote de cobranças pra exibir o status de
-  // pagamento direto no card, sem uma chamada por agendamento.
+  // Mesma estratégia: um lote de cobranças pra exibir status + ações de
+  // pagamento (Pix, link de pagamento) direto no card do agendamento —
+  // um único card por atendimento, sem precisar ir a outra tela.
   const { data: myPayments } = useMyPayments();
   const paymentBySchedulingId = new Map((myPayments?.items ?? []).map((p) => [p.scheduling_id, p]));
 
@@ -73,11 +79,19 @@ export function DashboardMyAppointmentsPage() {
     }
   }
 
+  async function copyPixCode(payment: PaymentOut) {
+    if (!payment.pix_copy_paste) return;
+    await navigator.clipboard.writeText(payment.pix_copy_paste);
+    push("Código Pix copiado.", "success");
+  }
+
   return (
     <div>
       <div>
         <h1 className="text-3xl">Meus Agendamentos</h1>
-        <p className="mt-1 text-bone-500">Acompanhe seus horários marcados, concluídos e cancelados.</p>
+        <p className="mt-1 text-bone-500">
+          Acompanhe seus horários marcados, pagamentos, concluídos e cancelados.
+        </p>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
@@ -143,14 +157,36 @@ export function DashboardMyAppointmentsPage() {
                       {formatTime(scheduling.scheduled_time)} – {formatTime(getSchedulingEndTime(scheduling))}
                     </span>
                     <span className="text-gold-400">{formatCurrencyBRL(scheduling.price_at_booking)}</span>
-                    {payment && (
+                  </div>
+
+                  {payment && (
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-ink-700 pt-3 text-sm text-bone-300">
                       <Badge variant={PAYMENT_STATUS_BADGE[payment.status]}>
                         {PAYMENT_STATUS_LABELS[payment.status]}
                       </Badge>
-                    )}
-                  </div>
+                      <span>
+                        {PAYMENT_BILLING_TYPE_LABELS[payment.billing_type as "PIX" | "CREDIT_CARD"] ??
+                          payment.billing_type}
+                      </span>
+                      <span className="text-bone-500">Venc. {formatDate(payment.due_date)}</span>
+                    </div>
+                  )}
 
                   <div className="mt-auto flex flex-wrap items-center justify-end gap-2 border-t border-ink-700 pt-4">
+                    {payment?.status === "PENDING" && payment.pix_copy_paste && (
+                      <Button variant="ghost" size="sm" onClick={() => copyPixCode(payment)}>
+                        <Copy className="h-4 w-4" /> Copiar Pix
+                      </Button>
+                    )}
+                    {payment?.status === "PENDING" && payment.invoice_url && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(payment.invoice_url ?? "", "_blank", "noopener,noreferrer")}
+                      >
+                        <ExternalLink className="h-4 w-4" /> Pagar
+                      </Button>
+                    )}
                     {scheduling.status === "completed" && (
                       <Button variant="ghost" size="sm" onClick={() => setRating(scheduling)}>
                         <Star className="h-4 w-4 text-gold-400" />

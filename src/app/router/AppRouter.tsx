@@ -101,9 +101,6 @@ const DashboardClientAppointmentDetailPage = lazy(() =>
 const DashboardRatingsPage = lazy(() =>
   import("@/pages/dashboard/DashboardRatingsPage").then((m) => ({ default: m.DashboardRatingsPage })),
 );
-const DashboardMyPaymentsPage = lazy(() =>
-  import("@/pages/dashboard/DashboardMyPaymentsPage").then((m) => ({ default: m.DashboardMyPaymentsPage })),
-);
 const DashboardPaymentsPage = lazy(() =>
   import("@/pages/dashboard/DashboardPaymentsPage").then((m) => ({ default: m.DashboardPaymentsPage })),
 );
@@ -177,7 +174,6 @@ export function AppRouter() {
             <Route element={<DashboardLayout />}>
               <Route path={ROUTES.dashboardMyAppointments} element={<DashboardMyAppointmentsPage />} />
               <Route path="/painel/meus-agendamentos/:appointmentId" element={<DashboardAppointmentDetailPage />} />
-              <Route path={ROUTES.dashboardMyPayments} element={<DashboardMyPaymentsPage />} />
             </Route>
           </Route>
 
