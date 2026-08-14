@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Banknote, CheckCircle2, Copy, CreditCard, ExternalLink, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/utils/cn";
-import { usePaymentMutations } from "@/hooks/usePayment";
+import { usePaymentForScheduling, usePaymentMutations } from "@/hooks/usePayment";
 import { useToast } from "@/app/providers/toast-context";
 import {
   PAYMENT_STATUS_BADGE,
@@ -20,6 +20,8 @@ interface PaymentPanelProps {
   /** Cobrança já existente pra esse agendamento, se houver (evita duplicar). */
   existingPayment?: PaymentOut;
   onCharged?: (payment: PaymentOut) => void;
+  /** Disparado uma única vez quando a cobrança é identificada como paga. */
+  onSettled?: (payment: PaymentOut) => void;
 }
 
 const METHODS: { value: PaymentBillingType; label: string; icon: typeof QrCode; description: string }[] = [
@@ -27,7 +29,7 @@ const METHODS: { value: PaymentBillingType; label: string; icon: typeof QrCode; 
   { value: "CREDIT_CARD", label: "Cartão de Crédito", icon: CreditCard, description: "Pagamento via link seguro da Asaas." },
 ];
 
-export function PaymentPanel({ schedulingId, existingPayment, onCharged }: PaymentPanelProps) {
+export function PaymentPanel({ schedulingId, existingPayment, onCharged, onSettled }: PaymentPanelProps) {
   const { push } = useToast();
   const { createCharge } = usePaymentMutations();
 
@@ -35,7 +37,21 @@ export function PaymentPanel({ schedulingId, existingPayment, onCharged }: Payme
   const [cpfCnpj, setCpfCnpj] = useState("");
   const [result, setResult] = useState<PaymentOut | null>(null);
 
-  const payment = result ?? existingPayment ?? null;
+  // Repolla enquanto já existe alguma cobrança pra esse agendamento (local
+  // ou vinda do agendamento) e ela ainda não foi liquidada — é assim que
+  // o status aqui reflete o processamento do webhook da Asaas sem o
+  // cliente precisar recarregar a página.
+  const hasChargePending = !!(result ?? existingPayment) && !isPaymentSettled((result ?? existingPayment)!);
+  const { payment: polledPayment } = usePaymentForScheduling(schedulingId, { poll: hasChargePending });
+
+  const payment = polledPayment ?? result ?? existingPayment ?? null;
+
+  useEffect(() => {
+    if (payment && isPaymentSettled(payment)) {
+      onSettled?.(payment);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payment?.status]);
 
   async function handleSubmit() {
     if (!billingType) return;

@@ -29,6 +29,7 @@ import type { ApiError } from "@/types/common";
 
 const FILTERS: { value: SchedulingFilter; label: string }[] = [
   { value: "all", label: "Todos" },
+  { value: "created", label: SCHEDULING_STATUS_LABELS.created },
   { value: "confirmed", label: SCHEDULING_STATUS_LABELS.confirmed },
   { value: "completed", label: SCHEDULING_STATUS_LABELS.completed },
   { value: "canceled", label: SCHEDULING_STATUS_LABELS.canceled },

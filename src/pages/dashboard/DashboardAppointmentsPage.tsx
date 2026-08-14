@@ -34,6 +34,7 @@ import {
 import type { ApiError } from "@/types/common";
 
 const STATUS_OPTIONS: SchedulingStatus[] = [
+  "created",
   "confirmed",
   "completed",
   "canceled",

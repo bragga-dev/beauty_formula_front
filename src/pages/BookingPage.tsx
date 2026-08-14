@@ -20,7 +20,7 @@ import { usePublicServices } from "@/hooks/useServices";
 import { useTeam } from "@/hooks/useTeam";
 import { useEligibleEmployees } from "@/hooks/useAvailability";
 import { useCalendarAvailability, type AggregatedSlot } from "@/hooks/useCalendarAvailability";
-import { useSchedulingMutations } from "@/hooks/useScheduling";
+import { useSchedulingMutations, useScheduling } from "@/hooks/useScheduling";
 import { useAuth } from "@/app/providers/auth-context";
 import { useToast } from "@/app/providers/toast-context";
 import { PaymentPanel } from "@/features/payment/PaymentPanel";
@@ -73,6 +73,13 @@ export function BookingPage() {
   const [selectedSlot, setSelectedSlot] = useState<{ start: string; end: string } | null>(null);
   const [confirmedAt, setConfirmedAt] = useState<string | null>(null);
   const [createdScheduling, setCreatedScheduling] = useState<SchedulingOut | null>(null);
+
+  // Reflete o status em tempo real do agendamento recém-criado — repolla
+  // sozinho enquanto CREATED (ver useScheduling) até o pagamento ser
+  // processado e o backend virar CONFIRMED.
+  const { data: liveScheduling } = useScheduling(createdScheduling?.id);
+  const schedulingStatus = liveScheduling?.status ?? createdScheduling?.status;
+  const isSchedulingConfirmed = schedulingStatus === "confirmed";
 
   const preselectServiceId = searchParams.get("service");
   const preselectEmployeeId = searchParams.get("employee");
@@ -442,16 +449,32 @@ export function BookingPage() {
           {step === 4 && selectedSlot && (
             <div className="space-y-4">
               {confirmedAt ? (
-                <div className="flex items-start gap-3 rounded-card border border-gold-400/30 bg-gold-400/10 p-4 text-sm text-bone-200">
-                  <CheckCircle2 className="h-5 w-5 shrink-0 text-gold-400" />
+                <div
+                  className={cn(
+                    "flex items-start gap-3 rounded-card border p-4 text-sm text-bone-200",
+                    isSchedulingConfirmed
+                      ? "border-success-500/30 bg-success-500/10"
+                      : "border-gold-400/30 bg-gold-400/10",
+                  )}
+                >
+                  <CheckCircle2 className={cn("h-5 w-5 shrink-0", isSchedulingConfirmed ? "text-success-500" : "text-gold-400")} />
                   <div>
                     <p className="font-display text-sm uppercase tracking-wide text-bone-50">
-                      Agendamento criado!
+                      {isSchedulingConfirmed ? "Agendamento confirmado!" : "Agendamento criado — aguardando pagamento"}
                     </p>
                     <p className="mt-1 text-bone-400">
-                      Efetue o pagamento abaixo para confirmar sua vaga às {formatTime(confirmedAt)} do dia{" "}
-                      {new Date(confirmedAt).toLocaleDateString("pt-BR")}. Você também pode pagar depois pelo
-                      seu painel — mas o horário só fica garantido após a confirmação do pagamento.
+                      {isSchedulingConfirmed ? (
+                        <>
+                          Pagamento identificado! Sua vaga às {formatTime(confirmedAt)} do dia{" "}
+                          {new Date(confirmedAt).toLocaleDateString("pt-BR")} está garantida.
+                        </>
+                      ) : (
+                        <>
+                          Efetue o pagamento abaixo para confirmar sua vaga às {formatTime(confirmedAt)} do dia{" "}
+                          {new Date(confirmedAt).toLocaleDateString("pt-BR")}. Você também pode pagar depois pelo
+                          seu painel — mas o horário só fica garantido após a confirmação do pagamento.
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>

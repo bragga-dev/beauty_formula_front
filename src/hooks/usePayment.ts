@@ -11,17 +11,23 @@ import type { PaymentCreateInput, PaymentRefundInput } from "@/types/payment";
  * cobranças do cliente. Busca um lote (mesma estratégia usada em
  * `useMySchedulings`) pra derivar a cobrança de um agendamento
  * específico no front.
+ *
+ * `poll = true` repolla a cada 5s enquanto não há uma cobrança ainda
+ * finalizada (RECEIVED/CONFIRMED/etc.) — usado na tela de pagamento
+ * do agendamento pra refletir o webhook da Asaas sem o cliente precisar
+ * recarregar a página.
  */
-export function useMyPayments() {
+export function useMyPayments(poll = false) {
   return useQuery({
     queryKey: ["payments", "mine"],
     queryFn: () => paymentService.listMine(1, 100),
+    refetchInterval: poll ? 5_000 : false,
   });
 }
 
 /** Cobrança mais recente vinculada a um agendamento específico, se existir. */
-export function usePaymentForScheduling(schedulingId?: string) {
-  const query = useMyPayments();
+export function usePaymentForScheduling(schedulingId?: string, options?: { poll?: boolean }) {
+  const query = useMyPayments(options?.poll ?? false);
   const payment = schedulingId
     ? query.data?.items.find((p) => p.scheduling_id === schedulingId)
     : undefined;

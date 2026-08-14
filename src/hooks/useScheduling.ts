@@ -35,6 +35,11 @@ export function useScheduling(id?: string) {
     queryKey: ["scheduling", id],
     queryFn: () => schedulingService.getMine(id as string),
     enabled: !!id,
+    // Enquanto aguarda pagamento (CREATED), repolla a cada 5s — a
+    // confirmação normalmente chega pelo webhook da Asaas em background,
+    // sem o cliente precisar recarregar a página. Pára sozinho assim que
+    // o status sai de CREATED (confirmado, cancelado etc.).
+    refetchInterval: (query) => (query.state.data?.status === "created" ? 5_000 : false),
   });
 }
 
@@ -63,7 +68,12 @@ export function useSchedulingMutations() {
     onSuccess: invalidate,
   });
 
-  return { create, cancel };
+  const confirm = useMutation({
+    mutationFn: (id: string) => schedulingService.confirmMine(id),
+    onSuccess: invalidate,
+  });
+
+  return { create, cancel, confirm };
 }
 
 // ═══════════════════════════════════════════════════════════════════

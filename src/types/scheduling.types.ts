@@ -2,9 +2,10 @@ import type { ServiceOut } from "./service";
 import type { EmployeeOut } from "./employee";
 import type { UserOut, Gender } from "./user";
 
-export type SchedulingStatus = "confirmed" | "completed" | "canceled" | "no_show" | "rescheduled";
+export type SchedulingStatus = "created" | "confirmed" | "completed" | "canceled" | "no_show" | "rescheduled";
 
 export const SCHEDULING_STATUS_LABELS: Record<SchedulingStatus, string> = {
+  created: "Aguardando pagamento",
   confirmed: "Confirmado",
   completed: "Concluído",
   canceled: "Cancelado",
@@ -16,6 +17,7 @@ export const SCHEDULING_STATUS_BADGE: Record<
   SchedulingStatus,
   "neutral" | "success" | "danger" | "gold" | "crimson" | "info" | "purple" | "orange"
 > = {
+  created: "gold",
   confirmed: "info",
   completed: "success",
   canceled: "danger",
@@ -89,14 +91,26 @@ export function getSchedulingEndTime(scheduling: SchedulingOut): Date {
 
 /**
  * Regra de cancelamento pelo cliente espelhando
- * `Scheduling.can_be_canceled_by_client` no backend: só quando CONFIRMED
- * e faltam pelo menos 2h para o horário agendado. A API não expõe esse
+ * `Scheduling.can_be_canceled_by_client` no backend: uma reserva CREATED
+ * (ainda não paga) pode ser cancelada a qualquer momento; uma vez
+ * CONFIRMED, só até 2h antes do horário agendado. A API não expõe esse
  * booleano pronto, então replicamos a regra aqui.
  */
 export function canClientCancelScheduling(scheduling: SchedulingOut): boolean {
+  if (scheduling.status === "created") return true;
   if (scheduling.status !== "confirmed") return false;
   const hoursUntil = (new Date(scheduling.scheduled_time).getTime() - Date.now()) / 3_600_000;
   return hoursUntil >= 2;
+}
+
+/**
+ * O cliente só precisa confirmar manualmente (fallback) enquanto o
+ * agendamento ainda está CREATED — normalmente a confirmação acontece
+ * sozinha assim que o webhook da Asaas processa o pagamento. Espelha a
+ * checagem de `confirm_scheduling_for_client` no backend.
+ */
+export function canClientConfirmScheduling(scheduling: SchedulingOut): boolean {
+  return scheduling.status === "created";
 }
 
 /**
