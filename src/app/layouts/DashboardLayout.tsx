@@ -12,6 +12,7 @@ import {
   Star,
   Package,
   MailQuestion,
+  CreditCard,
   Menu,
   X,
   LogOut,
@@ -46,6 +47,7 @@ export function DashboardLayout() {
       { to: ROUTES.dashboardUsers, label: "Usuários", icon: UserCog },
       { to: ROUTES.dashboardTeam, label: "Equipe", icon: Users },
       { to: ROUTES.dashboardRatings, label: "Avaliações", icon: Star },
+      { to: ROUTES.dashboardPayments, label: "Pagamentos", icon: CreditCard },
     );
   }
 
@@ -60,7 +62,10 @@ export function DashboardLayout() {
   }
 
   if (role === "client") {
-    items.push({ to: ROUTES.dashboardMyAppointments, label: "Meus Agendamentos", icon: CalendarCheck });
+    items.push(
+      { to: ROUTES.dashboardMyAppointments, label: "Meus Agendamentos", icon: CalendarCheck },
+      { to: ROUTES.dashboardMyPayments, label: "Meus Pagamentos", icon: CreditCard },
+    );
   }
 
   items.push({ to: ROUTES.dashboardProfile, label: "Meu Perfil", icon: User });

@@ -73,6 +73,11 @@ export const PAYMENT_BILLING_TYPE_LABELS: Record<PaymentBillingType, string> = {
 export interface PaymentOut {
   id: string;
   scheduling_id: string;
+  client_id: string;
+  client_name: string;
+  client_email: string;
+  service_name?: string | null;
+  scheduled_time?: string | null;
   asaas_payment_id?: string | null;
   asaas_customer_id?: string | null;
   value: string;

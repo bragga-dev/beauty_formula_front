@@ -46,10 +46,29 @@ export function usePaymentMutations() {
 // Admin
 // ═══════════════════════════════════════════════════════════════════
 
+/**
+ * Os filtros chegam do formulário como string vazia quando "nenhum
+ * valor selecionado" (ex.: <Select> com option "Todos os status").
+ * O back (Django Ninja / Pydantic) espera um Enum válido ou ausência
+ * do parâmetro — uma string vazia não é um `PaymentStatus`/billing
+ * type válido e derruba a query com 422, quebrando a listagem pra
+ * qualquer filtro no estado inicial. Mesma estratégia usada em
+ * `useAdminSchedulings`: normaliza "" pra undefined antes de mandar.
+ */
 export function useAdminPayments(filters: AdminPaymentListParams, page = 1, pageSize = 10) {
+  const sanitizedFilters: AdminPaymentListParams = {
+    search: filters.search || undefined,
+    status: filters.status || undefined,
+    billing_type: filters.billing_type || undefined,
+    client_id: filters.client_id || undefined,
+    start_date: filters.start_date || undefined,
+    end_date: filters.end_date || undefined,
+    synced: filters.synced,
+  };
+
   return useQuery({
-    queryKey: ["admin", "payments", filters, page, pageSize],
-    queryFn: () => paymentService.listAll({ ...filters, page, page_size: pageSize }),
+    queryKey: ["admin", "payments", sanitizedFilters, page, pageSize],
+    queryFn: () => paymentService.listAll({ ...sanitizedFilters, page, page_size: pageSize }),
   });
 }
 

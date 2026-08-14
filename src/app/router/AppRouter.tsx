@@ -101,6 +101,12 @@ const DashboardClientAppointmentDetailPage = lazy(() =>
 const DashboardRatingsPage = lazy(() =>
   import("@/pages/dashboard/DashboardRatingsPage").then((m) => ({ default: m.DashboardRatingsPage })),
 );
+const DashboardMyPaymentsPage = lazy(() =>
+  import("@/pages/dashboard/DashboardMyPaymentsPage").then((m) => ({ default: m.DashboardMyPaymentsPage })),
+);
+const DashboardPaymentsPage = lazy(() =>
+  import("@/pages/dashboard/DashboardPaymentsPage").then((m) => ({ default: m.DashboardPaymentsPage })),
+);
 
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
 
@@ -150,6 +156,7 @@ export function AppRouter() {
               <Route path={ROUTES.dashboardTeam} element={<DashboardTeamPage />} />
               <Route path={ROUTES.dashboardAppointments} element={<DashboardAppointmentsPage />} />
               <Route path="/painel/agendamentos/:appointmentId" element={<DashboardAppointmentAdminDetailPage />} />
+              <Route path={ROUTES.dashboardPayments} element={<DashboardPaymentsPage />} />
             </Route>
           </Route>
 
@@ -170,6 +177,7 @@ export function AppRouter() {
             <Route element={<DashboardLayout />}>
               <Route path={ROUTES.dashboardMyAppointments} element={<DashboardMyAppointmentsPage />} />
               <Route path="/painel/meus-agendamentos/:appointmentId" element={<DashboardAppointmentDetailPage />} />
+              <Route path={ROUTES.dashboardMyPayments} element={<DashboardMyPaymentsPage />} />
             </Route>
           </Route>
 

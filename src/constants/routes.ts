@@ -40,4 +40,7 @@ export const ROUTES = {
   dashboardClientAppointmentDetail: (id: string) => `/painel/meus-atendimentos/${id}`,
 
   dashboardRatings: "/painel/avaliacoes",
+
+  dashboardMyPayments: "/painel/meus-pagamentos",
+  dashboardPayments: "/painel/pagamentos",
 } as const;

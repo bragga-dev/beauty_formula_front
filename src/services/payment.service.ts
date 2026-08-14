@@ -6,6 +6,7 @@ export interface AdminPaymentListParams {
   page?: number;
   page_size?: number;
   client_id?: string;
+  search?: string;
   status?: string;
   billing_type?: string;
   start_date?: string;
