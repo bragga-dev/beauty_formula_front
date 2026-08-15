@@ -56,9 +56,12 @@ export interface MeOut {
   employee?: EmployeeProfile | null;
 }
 
-export interface TokenOut {
+export interface AccessTokenOut {
   access: string;
-  refresh: string;
+}
+
+export interface EmployeeCreatedOut {
+  email: string;
 }
 
 export interface SessionOut {

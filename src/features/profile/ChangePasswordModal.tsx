@@ -38,9 +38,10 @@ export function ChangePasswordModal({ open, onClose }: ChangePasswordModalProps)
     setIsSubmitting(true);
     try {
       const tokens = await authService.changePassword(form.old_password, form.new_password, form.new_password2);
-      // A troca de senha invalida os tokens anteriores no back-end;
-      // persistimos o novo par para manter a sessão ativa.
-      tokenStorage.setTokens(tokens.access, tokens.refresh);
+      // A troca de senha invalida os tokens anteriores no back-end; o novo
+      // refresh já vem setado direto no cookie httpOnly, só o access
+      // precisa ser guardado aqui pra manter a sessão ativa.
+      tokenStorage.setAccess(tokens.access);
       push("Senha alterada com sucesso!", "success");
       onClose();
     } catch (err) {

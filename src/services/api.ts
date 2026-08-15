@@ -5,6 +5,10 @@ import type { ApiError } from "@/types/common";
 
 export const api = axios.create({
   baseURL: API_URL,
+  // O refresh token vive num cookie httpOnly setado pelo backend — sem
+  // isso o browser não manda o cookie em requisições cross-origin
+  // (front em :5173/:3000, back em :8000) e o refresh nunca funcionaria.
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
@@ -43,12 +47,6 @@ api.interceptors.response.use(
       !originalRequest._retry &&
       !isAuthEndpoint
     ) {
-      const refresh = tokenStorage.getRefresh();
-      if (!refresh) {
-        tokenStorage.clear();
-        return Promise.reject(normalizeError(error));
-      }
-
       originalRequest._retry = true;
 
       if (isRefreshing) {
@@ -63,9 +61,12 @@ api.interceptors.response.use(
 
       isRefreshing = true;
       try {
+        // Sem body: o refresh token vai sozinho no cookie httpOnly
+        // (withCredentials acima cuida de mandar ele).
         const { data } = await axios.post<{ access: string }>(
           `${API_URL}/auth/refresh`,
-          { refresh },
+          {},
+          { withCredentials: true },
         );
         tokenStorage.setAccess(data.access);
         resolveQueue(data.access);

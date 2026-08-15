@@ -26,11 +26,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshMe = useCallback(async () => {
-    if (!tokenStorage.getAccess()) {
-      setMe(null);
-      return;
-    }
     try {
+      // Sem access em memória (reload de página, aba nova) — tenta um
+      // refresh silencioso via cookie httpOnly antes de desistir.
+      if (!tokenStorage.getAccess()) {
+        const { access } = await authService.refresh();
+        tokenStorage.setAccess(access);
+      }
       const profile = await authService.me();
       setMe(profile);
     } catch {
@@ -45,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const tokens = await authService.login(email, password);
-    tokenStorage.setTokens(tokens.access, tokens.refresh);
+    tokenStorage.setAccess(tokens.access);
     const profile = await authService.me();
     setMe(profile);
     return profile;
@@ -53,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginWithGoogle = useCallback(async (idToken: string) => {
     const tokens = await authService.loginWithGoogle(idToken);
-    tokenStorage.setTokens(tokens.access, tokens.refresh);
+    tokenStorage.setAccess(tokens.access);
     const profile = await authService.me();
     setMe(profile);
     return profile;
@@ -79,9 +81,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    const refresh = tokenStorage.getRefresh();
     try {
-      if (refresh) await authService.logout(refresh);
+      await authService.logout();
     } finally {
       tokenStorage.clear();
       setMe(null);
