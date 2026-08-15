@@ -56,6 +56,20 @@ export interface PublicRatingFilters {
   rating?: RatingValue;
 }
 
+/**
+ * Média geral do salão, calculada a partir das contagens por nota de
+ * `/average-ratings/all` (ver `ratingsService.getSalonSummary`). Usada na
+ * página de contato. `staleTime` alto porque não precisa ser em tempo
+ * real — só recalcula quando alguma avaliação é criada/moderada.
+ */
+export function useSalonRatingSummary() {
+  return useQuery({
+    queryKey: ["ratings", "salon-summary"],
+    queryFn: () => ratingsService.getSalonSummary(),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 /** Todas as avaliações autorizadas (públicas) do salão — página "Todas as Avaliações". */
 export function useAllPublicRatings(filters: PublicRatingFilters, page = 1, pageSize = 12) {
   return useQuery({

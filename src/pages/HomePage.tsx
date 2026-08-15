@@ -144,19 +144,6 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ── CTA ── */}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center gap-6 rounded-card border border-gold-400/30 bg-gradient-to-br from-ink-900 to-ink-800 p-10 text-center sm:p-16">
-          <h2 className="text-3xl sm:text-4xl">Pronto para sua melhor versão?</h2>
-          <p className="max-w-lg text-bone-400">
-            Agende seu horário agora e garanta atendimento com quem entende do assunto.
-          </p>
-          <ButtonLink to={ROUTES.booking} size="lg" variant="primary">
-            <CalendarClock className="h-4 w-4" /> Agendar Agora
-          </ButtonLink>
-        </div>
-      </section>
-
       {/* ── Localização ── */}
       <section className="border-t border-ink-700 bg-ink-900/40">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">

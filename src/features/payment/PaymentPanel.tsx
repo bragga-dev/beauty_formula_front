@@ -3,6 +3,7 @@ import { Banknote, CheckCircle2, Copy, CreditCard, ExternalLink, QrCode } from "
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
+import { PaymentBrands } from "@/components/ui/PaymentBrands";
 import { cn } from "@/utils/cn";
 import { usePaymentForScheduling, usePaymentMutations } from "@/hooks/usePayment";
 import { useToast } from "@/app/providers/toast-context";
@@ -168,6 +169,8 @@ export function PaymentPanel({ schedulingId, existingPayment, onCharged, onSettl
           hint="Necessário na primeira cobrança com cartão — fica salvo pras próximas."
         />
       )}
+
+      <PaymentBrands variant="inline" />
 
       <Button
         fullWidth

@@ -68,6 +68,43 @@ export const ratingsService = {
       })
       .then((r) => r.data),
 
+  /**
+   * Média geral do salão (todas as avaliações autorizadas, de qualquer
+   * serviço/funcionário). Não existe endpoint de summary geral no backend
+   * — então calculamos aqui: pedimos o `total` de `/average-ratings/all`
+   * filtrado por cada nota (1 a 5) com `page_size=1` (não traz os itens,
+   * só o total da página), e tiramos a média ponderada a partir das 5
+   * contagens. 5 requests leves, sem alterar a API.
+   */
+  getSalonSummary: async (): Promise<RatingSummaryOut> => {
+    const stars: RatingValue[] = [1, 2, 3, 4, 5];
+    const totals = await Promise.all(
+      stars.map((rating) =>
+        api
+          .get<PageOut<AverageRatingOut>>("/average-ratings/all", { params: { rating, page_size: 1 } })
+          .then((r) => r.data.total),
+      ),
+    );
+
+    const totalReviews = totals.reduce((sum, count) => sum + count, 0);
+    const weightedSum = stars.reduce((sum, rating, i) => sum + rating * totals[i], 0);
+    const averageRating = totalReviews > 0 ? weightedSum / totalReviews : 0;
+
+    return {
+      average_rating: averageRating.toFixed(1),
+      total_reviews: totalReviews,
+      // Amazon-style: 5 estrelas primeiro, 1 estrela por último.
+      breakdown: [...stars].reverse().map((rating) => {
+        const count = totals[rating - 1];
+        return {
+          rating,
+          count,
+          percentage: totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0,
+        };
+      }),
+    };
+  },
+
   // ═══════════════════════════════════════════════════════════════
   // Admin / Funcionário — moderação
   // ═══════════════════════════════════════════════════════════════
