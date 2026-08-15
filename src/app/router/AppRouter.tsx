@@ -43,6 +43,9 @@ const ResetPasswordPage = lazy(() =>
 const VerifyEmailPage = lazy(() =>
   import("@/pages/VerifyEmailPage").then((m) => ({ default: m.VerifyEmailPage })),
 );
+const EmailVerificationRequiredPage = lazy(() =>
+  import("@/pages/EmailVerificationRequiredPage").then((m) => ({ default: m.EmailVerificationRequiredPage })),
+);
 
 const DashboardOverviewPage = lazy(() =>
   import("@/pages/dashboard/DashboardOverviewPage").then((m) => ({ default: m.DashboardOverviewPage })),
@@ -136,6 +139,7 @@ export function AppRouter() {
           <Route path={ROUTES.forgotPassword} element={<ForgotPasswordPage />} />
           <Route path={ROUTES.resetPassword} element={<ResetPasswordPage />} />
           <Route path={ROUTES.verifyEmail} element={<VerifyEmailPage />} />
+          <Route path={ROUTES.emailVerificationRequired} element={<EmailVerificationRequiredPage />} />
 
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>

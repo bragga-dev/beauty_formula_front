@@ -37,7 +37,15 @@ export function LoginPage() {
       push("Login realizado com sucesso!", "success");
       goToDestination();
     } catch (err) {
-      setError((err as ApiError).detail as string);
+      const apiError = err as ApiError;
+      // 403 aqui é sempre "E-mail não verificado." (login_router só usa esse
+      // status pra esse caso) — manda pra tela de confirmação em vez de só
+      // mostrar o erro inline, já levando o e-mail pra poder reenviar.
+      if (apiError.status === 403) {
+        navigate(ROUTES.emailVerificationRequired, { state: { email } });
+        return;
+      }
+      setError(apiError.detail as string);
     } finally {
       setIsLoading(false);
     }

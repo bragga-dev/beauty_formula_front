@@ -17,6 +17,7 @@ export const ROUTES = {
   forgotPassword: "/recuperar-senha",
   resetPassword: "/redefinir-senha",
   verifyEmail: "/verificacao-concluida",
+  emailVerificationRequired: "/confirme-seu-email",
 
   booking: "/agendar",
 
