@@ -9,7 +9,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<MeOut>;
   loginWithGoogle: (idToken: string) => Promise<MeOut>;
-  register: (email: string, password: string, password2: string) => Promise<MeOut>;
+  register: (email: string, password: string, password2: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshMe: () => Promise<void>;
   /**
@@ -60,11 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(async (email: string, password: string, password2: string) => {
-    const tokens = await authService.register({ email, password, password2 });
-    tokenStorage.setTokens(tokens.access, tokens.refresh);
-    const profile = await authService.me();
-    setMe(profile);
-    return profile;
+    // O backend cria o usuário com is_active=False até o e-mail ser confirmado.
+    // Os tokens retornados aqui NÃO funcionam em nenhum endpoint autenticado
+    // (JWTAuth rejeita usuário inativo com 401) — por isso não guardamos
+    // tokens nem chamamos /me aqui. O usuário loga normalmente depois que
+    // confirmar o e-mail.
+    await authService.register({ email, password, password2 });
   }, []);
 
   const updateProfile = useCallback((profile: ClientProfile | EmployeeProfile) => {
