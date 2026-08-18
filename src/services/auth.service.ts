@@ -1,5 +1,5 @@
 import { api } from "./api";
-import type { MeOut, TokenOut, SessionOut } from "@/types/user";
+import type { MeOut, AccessTokenOut, EmployeeCreatedOut, SessionOut } from "@/types/user";
 import type { MessageOut } from "@/types/common";
 
 export interface RegisterPayload {
@@ -9,20 +9,26 @@ export interface RegisterPayload {
 }
 
 export const authService = {
+  // O refresh token não aparece mais em nenhuma resposta — o backend seta
+  // ele direto num cookie httpOnly. Só o access volta no corpo.
   login: (email: string, password: string) =>
-    api.post<TokenOut>("/auth/login", { email, password }).then((r) => r.data),
+    api.post<AccessTokenOut>("/auth/login", { email, password }).then((r) => r.data),
 
   loginWithGoogle: (id_token: string) =>
-    api.post<TokenOut>("/auth/google", { id_token }).then((r) => r.data),
+    api.post<AccessTokenOut>("/auth/google", { id_token }).then((r) => r.data),
 
   register: (payload: RegisterPayload) =>
-    api.post<TokenOut>("/auth/register", payload).then((r) => r.data),
+    api.post<AccessTokenOut>("/auth/register", payload).then((r) => r.data),
 
+  // Não retorna mais tokens do funcionário recém-criado pro admin que fez
+  // a chamada (era um vazamento de sessão). Só confirma o e-mail cadastrado.
   registerEmployee: (email: string) =>
-    api.post<TokenOut>("/auth/register-employee", { email }).then((r) => r.data),
+    api.post<EmployeeCreatedOut>("/auth/register-employee", { email }).then((r) => r.data),
 
-  logout: (refresh: string) =>
-    api.post<MessageOut>("/auth/logout", { refresh }).then((r) => r.data),
+  // Sem parâmetro: o refresh vai sozinho no cookie httpOnly.
+  refresh: () => api.post<AccessTokenOut>("/auth/refresh", {}).then((r) => r.data),
+
+  logout: () => api.post<MessageOut>("/auth/logout").then((r) => r.data),
 
   logoutAll: () => api.post<MessageOut>("/auth/logout-all").then((r) => r.data),
 
@@ -38,7 +44,7 @@ export const authService = {
 
   changePassword: (old_password: string, new_password: string, new_password2: string) =>
     api
-      .post<TokenOut>("/auth/change-password", { old_password, new_password, new_password2 })
+      .post<AccessTokenOut>("/auth/change-password", { old_password, new_password, new_password2 })
       .then((r) => r.data),
 
   resendVerification: (email: string) =>

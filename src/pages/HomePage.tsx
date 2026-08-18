@@ -144,19 +144,6 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ── CTA ── */}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center gap-6 rounded-card border border-gold-400/30 bg-gradient-to-br from-ink-900 to-ink-800 p-10 text-center sm:p-16">
-          <h2 className="text-3xl sm:text-4xl">Pronto para sua melhor versão?</h2>
-          <p className="max-w-lg text-bone-400">
-            Agende seu horário agora e garanta atendimento com quem entende do assunto.
-          </p>
-          <ButtonLink to={ROUTES.booking} size="lg" variant="primary">
-            <CalendarClock className="h-4 w-4" /> Agendar Agora
-          </ButtonLink>
-        </div>
-      </section>
-
       {/* ── Localização ── */}
       <section className="border-t border-ink-700 bg-ink-900/40">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
@@ -169,7 +156,7 @@ export function HomePage() {
 
           <div className="mt-8 w-full overflow-hidden rounded-card border border-ink-700">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4615.114594732231!2d-40.079903400000006!3d-13.858839300000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x740af43474a16fb%3A0x511cb8ad7c37e54b!2sFormula%20da%20Beleza!5e1!3m2!1spt-BR!2sbr!4v1785384906142!5m2!1spt-BR!2sbr"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d968.4175963275967!2d-40.08055473038109!3d-13.858813497095076!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x740af4347440833%3A0xd7b7e6c78bcc40b4!2sPra%C3%A7a%20da%20bandeira%2C%20164%20-%20Centro%2C%20Jequi%C3%A9%20-%20BA%2C%2045200-310!5e0!3m2!1spt-BR!2sbr!4v1785977567284!5m2!1spt-BR!2sbr"
               className="h-[360px] w-full sm:h-[440px]"
               style={{ border: 0 }}
               allowFullScreen

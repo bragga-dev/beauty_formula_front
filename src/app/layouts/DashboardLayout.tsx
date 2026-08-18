@@ -5,8 +5,14 @@ import {
   User,
   Scissors,
   Users,
+  UserCog,
   CalendarClock,
   CalendarOff,
+  CalendarCheck,
+  Star,
+  Package,
+  MailQuestion,
+  CreditCard,
   Menu,
   X,
   LogOut,
@@ -34,17 +40,29 @@ export function DashboardLayout() {
 
   if (role === "admin") {
     items.push(
+      { to: ROUTES.dashboardAppointments, label: "Agendamentos", icon: CalendarCheck },
       { to: ROUTES.dashboardServices, label: "Serviços", icon: Scissors },
+      { to: ROUTES.dashboardProducts, label: "Produtos", icon: Package },
+      { to: ROUTES.dashboardContacts, label: "Contatos", icon: MailQuestion },
+      { to: ROUTES.dashboardUsers, label: "Usuários", icon: UserCog },
       { to: ROUTES.dashboardTeam, label: "Equipe", icon: Users },
+      { to: ROUTES.dashboardRatings, label: "Avaliações", icon: Star },
+      { to: ROUTES.dashboardPayments, label: "Pagamentos", icon: CreditCard },
     );
   }
 
   if (role === "employee") {
     items.push(
       { to: ROUTES.dashboardMyServices, label: "Meus Serviços", icon: Scissors },
+      { to: ROUTES.dashboardMyClientAppointments, label: "Meus Atendimentos", icon: CalendarCheck },
       { to: ROUTES.dashboardMySchedule, label: "Minha Agenda", icon: CalendarClock },
       { to: ROUTES.dashboardMyTimeOff, label: "Meus Bloqueios", icon: CalendarOff },
+      { to: ROUTES.dashboardRatings, label: "Avaliações", icon: Star },
     );
+  }
+
+  if (role === "client") {
+    items.push({ to: ROUTES.dashboardMyAppointments, label: "Meus Agendamentos", icon: CalendarCheck });
   }
 
   items.push({ to: ROUTES.dashboardProfile, label: "Meu Perfil", icon: User });
@@ -104,7 +122,7 @@ export function DashboardLayout() {
         {NavContent}
       </aside>
 
-      <div className="flex min-h-screen flex-1 flex-col">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between border-b border-ink-700 bg-ink-900 px-4 py-3 lg:hidden">
           <Logo />
           <button onClick={() => setMobileOpen(true)} aria-label="Abrir menu">
@@ -128,8 +146,10 @@ export function DashboardLayout() {
           </div>
         )}
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          <Outlet />
+        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto w-full min-w-0 max-w-7xl">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
-import { AtSign } from "lucide-react";
+import { RatingStars } from "@/components/ui/RatingStars";
 import { ROUTES } from "@/constants/routes";
 import { initials } from "@/utils/format";
+import { useEmployeeRatingSummary } from "@/hooks/useRatings";
 import type { EmployeeTeamOut } from "@/types/employee";
 
 export function EmployeeCard({ employee }: { employee: EmployeeTeamOut }) {
   const name = [employee.first_name, employee.last_name].filter(Boolean).join(" ") || "Profissional";
+  const { data: summary } = useEmployeeRatingSummary(employee.id);
   return (
     <Link
       to={ROUTES.teamDetail(employee.id)}
@@ -27,12 +29,12 @@ export function EmployeeCard({ employee }: { employee: EmployeeTeamOut }) {
       </div>
       <div className="p-4">
         <h3 className="font-display text-sm uppercase tracking-wide text-bone-50">{name}</h3>
-        {employee.bio && <p className="mt-1 line-clamp-2 text-xs text-bone-500">{employee.bio}</p>}
-        {employee.instagram && (
-          <span className="mt-2 flex items-center gap-1 text-xs text-gold-400">
-            <AtSign className="h-3 w-3" /> {employee.instagram}
-          </span>
-        )}
+        <RatingStars
+          value={summary?.average_rating ?? 0}
+          totalReviews={summary?.total_reviews}
+          size="xs"
+          className="mt-1.5"
+        />
       </div>
     </Link>
   );

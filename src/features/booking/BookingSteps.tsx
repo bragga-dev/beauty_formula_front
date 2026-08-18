@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import { cn } from "@/utils/cn";
 
-const STEPS = ["Serviço", "Profissional", "Data e Horário", "Confirmação"];
+const STEPS = ["Serviço", "Profissional", "Data e Horário", "Pagamento"];
 
 export function BookingSteps({ current }: { current: number }) {
   return (

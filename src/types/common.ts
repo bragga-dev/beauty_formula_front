@@ -11,6 +11,6 @@ export interface MessageOut {
 }
 
 export interface ApiError {
-  detail: string | Record<string, unknown>;
+  detail: string;
   status?: number;
 }

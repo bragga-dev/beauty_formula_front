@@ -9,7 +9,6 @@ import {
   ArrowRight,
   Info,
   CheckCircle2,
-  ChevronDown,
 } from "lucide-react";
 import { BookingSteps } from "@/features/booking/BookingSteps";
 import { Card } from "@/components/ui/Card";
@@ -21,22 +20,22 @@ import { usePublicServices } from "@/hooks/useServices";
 import { useTeam } from "@/hooks/useTeam";
 import { useEligibleEmployees } from "@/hooks/useAvailability";
 import { useCalendarAvailability, type AggregatedSlot } from "@/hooks/useCalendarAvailability";
-import { useSchedulingMutations } from "@/hooks/useScheduling";
+import { useSchedulingMutations, useScheduling } from "@/hooks/useScheduling";
 import { useAuth } from "@/app/providers/auth-context";
 import { useToast } from "@/app/providers/toast-context";
+import { PaymentPanel } from "@/features/payment/PaymentPanel";
 import { formatCurrencyBRL, formatDuration, formatTime, initials } from "@/utils/format";
 import { cn } from "@/utils/cn";
 import { ROUTES } from "@/constants/routes";
 import type { ServiceOut } from "@/types/service";
 import type { EmployeeTeamOut } from "@/types/employee";
+import type { SchedulingOut } from "@/types/scheduling.types";
 import type { ApiError } from "@/types/common";
 
-// Janela de dias mostrada no calendário. Começa curta pra não estourar
-// o rate-limit público (1 request por profissional x dia) e o cliente
-// pode pedir mais dias sob demanda — a busca sempre respeita o teto de
-// disponibilidade calculado no backend (MAX_DAYS_AHEAD = 15).
-const INITIAL_DAYS_WINDOW = 7;
-const MAX_DAYS_WINDOW = 14;
+// Janela de dias mostrada no calendário — os 30 dias inteiros de uma vez
+// (mesmo teto de disponibilidade calculado no backend, MAX_DAYS_AHEAD =
+// 30). A faixa de dias rola horizontalmente em vez de carregar aos poucos.
+const DAYS_WINDOW = 30;
 
 function nextDays(count: number): Date[] {
   return Array.from({ length: count }, (_, i) => {
@@ -68,12 +67,19 @@ export function BookingPage() {
   // ("agendar com este profissional" no perfil dele) — pula a Etapa 2.
   const [employeeLocked, setEmployeeLocked] = useState(false);
 
-  const [daysWindow, setDaysWindow] = useState(INITIAL_DAYS_WINDOW);
   // `null` = ainda não escolhida / precisa ser recalculada (dispara a
   // seleção automática do primeiro dia com vaga real).
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<{ start: string; end: string } | null>(null);
   const [confirmedAt, setConfirmedAt] = useState<string | null>(null);
+  const [createdScheduling, setCreatedScheduling] = useState<SchedulingOut | null>(null);
+
+  // Reflete o status em tempo real do agendamento recém-criado — repolla
+  // sozinho enquanto CREATED (ver useScheduling) até o pagamento ser
+  // processado e o backend virar CONFIRMED.
+  const { data: liveScheduling } = useScheduling(createdScheduling?.id);
+  const schedulingStatus = liveScheduling?.status ?? createdScheduling?.status;
+  const isSchedulingConfirmed = schedulingStatus === "confirmed";
 
   const preselectServiceId = searchParams.get("service");
   const preselectEmployeeId = searchParams.get("employee");
@@ -112,7 +118,6 @@ export function BookingPage() {
         setSelectedEmployee(found);
         setIsAnyProfessional(false);
         setEmployeeLocked(true);
-        setDaysWindow(INITIAL_DAYS_WINDOW);
         setSelectedDate(null);
         setStep(3);
       }
@@ -120,7 +125,7 @@ export function BookingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teamPage, preselectEmployeeId, selectedService]);
 
-  const days = useMemo(() => nextDays(daysWindow), [daysWindow]);
+  const days = useMemo(() => nextDays(DAYS_WINDOW), []);
   const isCalendarStep = step === 3;
 
   // Profissional(is) considerados no calendário: um só (fixo/escolhido)
@@ -146,16 +151,13 @@ export function BookingPage() {
     const firstAvailable = calendar.days.find((d) => d.slots.length > 0);
     if (firstAvailable) {
       setSelectedDate(new Date(`${firstAvailable.date}T00:00:00`));
-    } else if (daysWindow < MAX_DAYS_WINDOW) {
-      setDaysWindow(MAX_DAYS_WINDOW);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCalendarStep, selectedDate, calendar.isLoading, calendar.isError, calendar.days, daysWindow]);
+  }, [isCalendarStep, selectedDate, calendar.isLoading, calendar.isError, calendar.days]);
 
   const selectedDateStr = selectedDate ? selectedDate.toISOString().slice(0, 10) : undefined;
   const slotsForSelectedDate = selectedDateStr ? calendar.slotsForDate(selectedDateStr) : [];
-  const noAvailabilityInWindow =
-    !calendar.isLoading && !calendar.isError && !selectedDate && daysWindow >= MAX_DAYS_WINDOW;
+  const noAvailabilityInWindow = !calendar.isLoading && !calendar.isError && !selectedDate;
 
   function goToStep(n: number) {
     setStep(n);
@@ -166,7 +168,6 @@ export function BookingPage() {
     setSelectedEmployee(null);
     setIsAnyProfessional(false);
     setEmployeeLocked(false);
-    setDaysWindow(INITIAL_DAYS_WINDOW);
     setSelectedDate(null);
     setSelectedSlot(null);
     setStep(2);
@@ -177,7 +178,6 @@ export function BookingPage() {
   function selectEmployee(employee: EmployeeTeamOut) {
     setSelectedEmployee(employee);
     setIsAnyProfessional(false);
-    setDaysWindow(INITIAL_DAYS_WINDOW);
     setSelectedDate(null);
     setSelectedSlot(null);
     setStep(3);
@@ -186,7 +186,6 @@ export function BookingPage() {
   function selectAnyProfessional() {
     setSelectedEmployee(null);
     setIsAnyProfessional(true);
-    setDaysWindow(INITIAL_DAYS_WINDOW);
     setSelectedDate(null);
     setSelectedSlot(null);
     setStep(3);
@@ -235,13 +234,14 @@ export function BookingPage() {
   async function handleConfirm() {
     if (!selectedService || !selectedEmployee || !selectedSlot) return;
     try {
-      await create.mutateAsync({
+      const created = await create.mutateAsync({
         service_id: selectedService.id,
         employee_id: selectedEmployee.id,
         scheduled_time: selectedSlot.start,
       });
+      setCreatedScheduling(created);
       setConfirmedAt(selectedSlot.start);
-      push("Agendamento confirmado!", "success");
+      push("Agendamento Criado!", "success");
     } catch (err) {
       push((err as ApiError).detail as string, "error");
     }
@@ -258,7 +258,7 @@ export function BookingPage() {
       </div>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="min-w-0 lg:col-span-2">
           {/* Etapa 1 — Serviço */}
           {step === 1 && (
             <div className="space-y-3">
@@ -275,13 +275,13 @@ export function BookingPage() {
                       : "border-ink-700 bg-ink-800/60 hover:border-gold-400/50",
                   )}
                 >
-                  <div>
-                    <p className="font-display text-sm uppercase tracking-wide text-bone-50">{service.name}</p>
+                  <div className="min-w-0">
+                    <p className="truncate font-display text-sm uppercase tracking-wide text-bone-50">{service.name}</p>
                     <p className="mt-1 flex items-center gap-1.5 text-xs text-bone-500">
-                      <Clock className="h-3.5 w-3.5" /> {formatDuration(service.duration_minutes)}
+                      <Clock className="h-3.5 w-3.5 shrink-0" /> {formatDuration(service.duration_minutes)}
                     </p>
                   </div>
-                  <span className="font-display text-crimson-400">{formatCurrencyBRL(service.price)}</span>
+                  <span className="shrink-0 font-display text-crimson-400">{formatCurrencyBRL(service.price)}</span>
                 </button>
               ))}
               {preselectServiceId && !selectedService && (
@@ -374,7 +374,7 @@ export function BookingPage() {
                 </p>
               )}
 
-              <div className="flex gap-2 overflow-x-auto pb-3">
+              <div className="mb-1 flex gap-2 overflow-x-auto pb-3">
                 {days.map((day) => {
                   const dayStr = day.toISOString().slice(0, 10);
                   const isSelected = selectedDateStr === dayStr;
@@ -387,7 +387,7 @@ export function BookingPage() {
                       onClick={() => !disabled && selectDay(day)}
                       disabled={disabled}
                       className={cn(
-                        "flex w-16 shrink-0 flex-col items-center rounded-card border py-2.5 transition-colors",
+                        "flex w-14 shrink-0 flex-col items-center rounded-card border py-2.5 transition-colors sm:w-16",
                         isSelected ? "border-crimson-500 bg-crimson-500/10" : "border-ink-700 hover:border-gold-400/40",
                         disabled && "cursor-not-allowed border-ink-800 opacity-30 hover:border-ink-800",
                       )}
@@ -400,17 +400,9 @@ export function BookingPage() {
                   );
                 })}
               </div>
+              <p className="mb-3 text-[11px] text-bone-600">Arraste para o lado para ver os próximos 30 dias.</p>
 
-              {daysWindow < MAX_DAYS_WINDOW && !calendar.isError && (
-                <button
-                  onClick={() => setDaysWindow(MAX_DAYS_WINDOW)}
-                  className="mb-3 flex items-center gap-1 text-xs text-bone-500 transition-colors hover:text-gold-400"
-                >
-                  Ver mais dias <ChevronDown className="h-3.5 w-3.5" />
-                </button>
-              )}
-
-              <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+              <div className="mt-2 grid grid-cols-[repeat(auto-fill,minmax(4.75rem,1fr))] gap-2">
                 {calendar.isLoading &&
                   Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-11 w-full" />)}
                 {calendar.isError && (
@@ -457,30 +449,47 @@ export function BookingPage() {
           {step === 4 && selectedSlot && (
             <div className="space-y-4">
               {confirmedAt ? (
-                <div className="flex items-start gap-3 rounded-card border border-success-500/30 bg-success-500/10 p-4 text-sm text-bone-200">
-                  <CheckCircle2 className="h-5 w-5 shrink-0 text-success-500" />
+                <div
+                  className={cn(
+                    "flex items-start gap-3 rounded-card border p-4 text-sm text-bone-200",
+                    isSchedulingConfirmed
+                      ? "border-success-500/30 bg-success-500/10"
+                      : "border-gold-400/30 bg-gold-400/10",
+                  )}
+                >
+                  <CheckCircle2 className={cn("h-5 w-5 shrink-0", isSchedulingConfirmed ? "text-success-500" : "text-gold-400")} />
                   <div>
                     <p className="font-display text-sm uppercase tracking-wide text-bone-50">
-                      Agendamento confirmado!
+                      {isSchedulingConfirmed ? "Agendamento confirmado!" : "Agendamento criado — aguardando pagamento"}
                     </p>
                     <p className="mt-1 text-bone-400">
-                      Te esperamos {formatTime(confirmedAt)} do dia{" "}
-                      {new Date(confirmedAt).toLocaleDateString("pt-BR")}. Você pode acompanhar seus
-                      agendamentos a qualquer momento no seu painel.
+                      {isSchedulingConfirmed ? (
+                        <>
+                          Pagamento identificado! Sua vaga às {formatTime(confirmedAt)} do dia{" "}
+                          {new Date(confirmedAt).toLocaleDateString("pt-BR")} está garantida.
+                        </>
+                      ) : (
+                        <>
+                          Efetue o pagamento abaixo para confirmar sua vaga às {formatTime(confirmedAt)} do dia{" "}
+                          {new Date(confirmedAt).toLocaleDateString("pt-BR")}. Você também pode pagar depois pelo
+                          seu painel — mas o horário só fica garantido após a confirmação do pagamento.
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
               ) : !isAuthenticated ? (
                 <div className="flex items-start gap-3 rounded-card border border-gold-400/30 bg-gold-400/5 p-4 text-sm text-bone-300">
                   <Info className="h-5 w-5 shrink-0 text-gold-400" />
-                  <p>Faça login para confirmar seu agendamento — a seleção que você já fez fica guardada.</p>
+                  <p>Faça login para criar seu agendamento — a seleção que você já fez fica guardada.</p>
                 </div>
               ) : (
                 <div className="flex items-start gap-3 rounded-card border border-ink-700 bg-ink-800/60 p-4 text-sm text-bone-300">
                   <Info className="h-5 w-5 shrink-0 text-gold-400" />
-                  <p>Confira o resumo ao lado e confirme seu agendamento.</p>
+                  <p>Confira o resumo ao lado e crie seu agendamento. Ele só é confirmado após o pagamento.</p>
                 </div>
               )}
+              {confirmedAt && createdScheduling && <PaymentPanel schedulingId={createdScheduling.id} />}
               {!confirmedAt && (
                 <Button variant="ghost" size="sm" onClick={backToDateStep}>
                   <ArrowLeft className="h-4 w-4" /> Escolher outro horário
@@ -531,7 +540,7 @@ export function BookingPage() {
               </Button>
             ) : !isAuthenticated && step === 4 ? (
               <Button fullWidth size="lg" className="mt-6" onClick={goToLogin}>
-                Fazer login para confirmar
+                Fazer login para agendar
               </Button>
             ) : (
               <Button
@@ -542,7 +551,7 @@ export function BookingPage() {
                 isLoading={create.isPending}
                 onClick={handleConfirm}
               >
-                Confirmar Agendamento <ArrowRight className="h-4 w-4" />
+                Criar Agendamento <ArrowRight className="h-4 w-4" />
               </Button>
             )}
             {!confirmedAt && (

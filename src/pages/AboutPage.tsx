@@ -1,13 +1,17 @@
 import { Award, Users2, Sparkle, Star } from "lucide-react";
+import { useSalonRatingSummary } from "@/hooks/useRatings";
 
 const STATS = [
   { icon: Award, value: "+5", label: "Anos de Experiência" },
   { icon: Users2, value: "+10K", label: "Clientes Satisfeitos" },
   { icon: Sparkle, value: "100%", label: "Foco em Qualidade" },
-  { icon: Star, value: "5.0", label: "Avaliação Média" },
 ];
 
 export function AboutPage() {
+  const { data: ratingSummary } = useSalonRatingSummary();
+  const averageRatingValue =
+    ratingSummary && ratingSummary.total_reviews > 0 ? Number(ratingSummary.average_rating).toFixed(1) : "—";
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8">
       <span className="text-xs uppercase tracking-widest text-crimson-400">Sobre Nós</span>
@@ -29,6 +33,11 @@ export function AboutPage() {
             <p className="mt-1 text-xs text-bone-500">{s.label}</p>
           </div>
         ))}
+        <div className="rounded-card border border-ink-700 bg-ink-800/60 p-5 text-center">
+          <Star className="mx-auto h-6 w-6 text-gold-400" />
+          <p className="mt-3 font-display text-2xl text-bone-50">{averageRatingValue}</p>
+          <p className="mt-1 text-xs text-bone-500">Avaliação Média</p>
+        </div>
       </div>
     </div>
   );

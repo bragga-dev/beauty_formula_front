@@ -1,7 +1,7 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "@/utils/cn";
 
-type Variant = "neutral" | "success" | "danger" | "gold" | "crimson";
+type Variant = "neutral" | "success" | "danger" | "gold" | "crimson" | "info" | "purple" | "orange";
 
 const STYLES: Record<Variant, string> = {
   neutral: "bg-ink-700 text-bone-300",
@@ -9,6 +9,9 @@ const STYLES: Record<Variant, string> = {
   danger: "bg-danger-500/15 text-danger-500",
   gold: "bg-gold-400/15 text-gold-400",
   crimson: "bg-crimson-500/15 text-crimson-400",
+  info: "bg-info-500/15 text-info-500",
+  purple: "bg-purple-500/20 text-purple-400",
+  orange: "bg-orange-500/15 text-orange-500",
 };
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {

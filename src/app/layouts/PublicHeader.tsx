@@ -14,7 +14,9 @@ const NAV_LINKS = [
   { to: ROUTES.home, label: "Início" },
   { to: ROUTES.about, label: "Sobre" },
   { to: ROUTES.services, label: "Serviços" },
+  { to: ROUTES.products, label: "Produtos" },
   { to: ROUTES.team, label: "Nosso Time" },
+  { to: ROUTES.ratings, label: "Avaliações" },
   { to: ROUTES.contact, label: "Contato" },
 ];
 

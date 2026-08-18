@@ -3,8 +3,11 @@ import { Clock, ArrowLeft, CalendarClock } from "lucide-react";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Button } from "@/components/ui/Button";
+import { RatingStars } from "@/components/ui/RatingStars";
 import { ErrorState } from "@/components/feedback/ErrorState";
+import { RatingBreakdown } from "@/features/ratings/RatingBreakdown";
 import { useServiceDetail } from "@/hooks/useServices";
+import { useServiceRatingSummary } from "@/hooks/useRatings";
 import { formatCurrencyBRL, formatDuration } from "@/utils/format";
 import { ROUTES } from "@/constants/routes";
 
@@ -12,6 +15,7 @@ export function ServiceDetailPage() {
   const { serviceId } = useParams<{ serviceId: string }>();
   const navigate = useNavigate();
   const { data: service, isLoading, isError, refetch } = useServiceDetail(serviceId);
+  const { data: ratingSummary } = useServiceRatingSummary(serviceId);
 
   if (isLoading) {
     return (
@@ -47,6 +51,12 @@ export function ServiceDetailPage() {
 
         <div>
           <h1 className="text-3xl">{service.name}</h1>
+          <RatingStars
+            value={ratingSummary?.average_rating ?? 0}
+            totalReviews={ratingSummary?.total_reviews}
+            size="md"
+            className="mt-2"
+          />
           <div className="mt-4 flex items-center gap-4">
             <span className="flex items-center gap-1.5 text-sm text-bone-400">
               <Clock className="h-4 w-4" /> {formatDuration(service.duration_minutes)}
@@ -64,6 +74,17 @@ export function ServiceDetailPage() {
             </Button>
           </div>
         </div>
+      </div>
+
+      <div className="mt-14 max-w-md">
+        <h2 className="text-xl">Avaliações</h2>
+        <RatingBreakdown
+          averageRating={ratingSummary?.average_rating ?? 0}
+          totalReviews={ratingSummary?.total_reviews ?? 0}
+          breakdown={ratingSummary?.breakdown ?? []}
+          seeAllLink={service ? ROUTES.serviceReviews(service.id) : undefined}
+          className="mt-5"
+        />
       </div>
     </div>
   );

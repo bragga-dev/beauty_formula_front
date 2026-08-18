@@ -1,18 +1,27 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { ArrowLeft, AtSign, CalendarClock } from "lucide-react";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ButtonLink } from "@/components/ui/ButtonLink";
+import { RatingStars } from "@/components/ui/RatingStars";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { Pagination } from "@/components/tables/Pagination";
+import { RatingBreakdown } from "@/features/ratings/RatingBreakdown";
+import { ReviewList } from "@/features/ratings/ReviewList";
 import { formatCurrencyBRL, formatDuration, initials } from "@/utils/format";
 import { useTeamMember } from "@/hooks/useTeam";
+import { useEmployeeRatingSummary, useEmployeeRatings } from "@/hooks/useRatings";
 import { ROUTES } from "@/constants/routes";
 import { Scissors } from "lucide-react";
 
 export function TeamMemberDetailPage() {
   const { employeeId } = useParams<{ employeeId: string }>();
   const navigate = useNavigate();
+  const [reviewsPage, setReviewsPage] = useState(1);
   const { data: employee, isLoading, isError, refetch } = useTeamMember(employeeId);
+  const { data: ratingSummary, isLoading: isLoadingRatingSummary } = useEmployeeRatingSummary(employeeId);
+  const { data: reviews, isLoading: isLoadingReviews } = useEmployeeRatings(employeeId, reviewsPage, 6);
 
   if (isLoading) {
     return (
@@ -54,6 +63,12 @@ export function TeamMemberDetailPage() {
         </div>
         <div>
           <h1 className="text-3xl">{name}</h1>
+          <RatingStars
+            value={ratingSummary?.average_rating ?? 0}
+            totalReviews={ratingSummary?.total_reviews}
+            size="md"
+            className="mt-2 justify-center sm:justify-start"
+          />
           {employee.bio && <p className="mt-2 max-w-lg text-bone-400">{employee.bio}</p>}
           {employee.instagram && (
             <span className="mt-2 inline-flex items-center gap-1.5 text-sm text-gold-400">
@@ -89,6 +104,32 @@ export function TeamMemberDetailPage() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="mt-12">
+        <h2 className="text-xl">Avaliações</h2>
+        <div className="mt-5 grid gap-8 lg:grid-cols-[300px_1fr]">
+          <div className="rounded-card border border-ink-700 bg-ink-800/60 p-5 lg:sticky lg:top-24 lg:self-start">
+            {isLoadingRatingSummary ? (
+              <Skeleton className="h-40 w-full" />
+            ) : (
+              <RatingBreakdown
+                averageRating={ratingSummary?.average_rating ?? 0}
+                totalReviews={ratingSummary?.total_reviews ?? 0}
+                breakdown={ratingSummary?.breakdown ?? []}
+              />
+            )}
+          </div>
+
+          <div>
+            <ReviewList ratings={reviews?.items} isLoading={isLoadingReviews} emptySubject="este profissional" />
+            {reviews && reviews.pages > 1 && (
+              <div className="mt-6">
+                <Pagination page={reviews.page} pages={reviews.pages} onChange={setReviewsPage} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

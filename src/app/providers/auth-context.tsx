@@ -9,7 +9,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<MeOut>;
   loginWithGoogle: (idToken: string) => Promise<MeOut>;
-  register: (email: string, password: string, password2: string) => Promise<MeOut>;
+  register: (email: string, password: string, password2: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshMe: () => Promise<void>;
   /**
@@ -26,11 +26,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshMe = useCallback(async () => {
-    if (!tokenStorage.getAccess()) {
-      setMe(null);
-      return;
-    }
     try {
+      // Sem access em memória (reload de página, aba nova) — tenta um
+      // refresh silencioso via cookie httpOnly antes de desistir.
+      if (!tokenStorage.getAccess()) {
+        const { access } = await authService.refresh();
+        tokenStorage.setAccess(access);
+      }
       const profile = await authService.me();
       setMe(profile);
     } catch {
@@ -45,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const tokens = await authService.login(email, password);
-    tokenStorage.setTokens(tokens.access, tokens.refresh);
+    tokenStorage.setAccess(tokens.access);
     const profile = await authService.me();
     setMe(profile);
     return profile;
@@ -53,18 +55,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginWithGoogle = useCallback(async (idToken: string) => {
     const tokens = await authService.loginWithGoogle(idToken);
-    tokenStorage.setTokens(tokens.access, tokens.refresh);
+    tokenStorage.setAccess(tokens.access);
     const profile = await authService.me();
     setMe(profile);
     return profile;
   }, []);
 
   const register = useCallback(async (email: string, password: string, password2: string) => {
-    const tokens = await authService.register({ email, password, password2 });
-    tokenStorage.setTokens(tokens.access, tokens.refresh);
-    const profile = await authService.me();
-    setMe(profile);
-    return profile;
+    // O backend cria o usuário com is_active=False até o e-mail ser confirmado.
+    // Os tokens retornados aqui NÃO funcionam em nenhum endpoint autenticado
+    // (JWTAuth rejeita usuário inativo com 401) — por isso não guardamos
+    // tokens nem chamamos /me aqui. O usuário loga normalmente depois que
+    // confirmar o e-mail.
+    await authService.register({ email, password, password2 });
   }, []);
 
   const updateProfile = useCallback((profile: ClientProfile | EmployeeProfile) => {
@@ -78,9 +81,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    const refresh = tokenStorage.getRefresh();
     try {
-      if (refresh) await authService.logout(refresh);
+      await authService.logout();
     } finally {
       tokenStorage.clear();
       setMe(null);

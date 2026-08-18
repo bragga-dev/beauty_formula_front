@@ -36,7 +36,7 @@ export function RegisterPage() {
     try {
       await register(email, password, password2);
       push("Conta criada! Verifique seu e-mail para confirmar o cadastro.", "success");
-      navigate(ROUTES.dashboard, { replace: true });
+      navigate(ROUTES.login, { replace: true });
     } catch (err) {
       setError((err as ApiError).detail as string);
     } finally {

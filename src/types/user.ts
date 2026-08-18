@@ -11,7 +11,17 @@ export interface UserOut {
   created_at: string;
 }
 
-export type Gender = "male" | "female" | "other";
+export interface UserAdminOut extends UserOut {
+  display_name?: string | null;
+  photo_url?: string | null;
+}
+
+// Os valores do enum batem 1:1 com o backend (core.constants.gender.Gender) —
+// que usa os rótulos em português como o próprio valor armazenado, não
+// "male"/"female"/"other". Mandar valor em inglês faz o Ninja rejeitar
+// com erro de validação (uma lista, não string) e travar a UI que tenta
+// renderizar isso como texto.
+export type Gender = "Masculino" | "Feminino" | "Outro";
 
 export interface ClientProfile {
   id: string;
@@ -46,9 +56,12 @@ export interface MeOut {
   employee?: EmployeeProfile | null;
 }
 
-export interface TokenOut {
+export interface AccessTokenOut {
   access: string;
-  refresh: string;
+}
+
+export interface EmployeeCreatedOut {
+  email: string;
 }
 
 export interface SessionOut {

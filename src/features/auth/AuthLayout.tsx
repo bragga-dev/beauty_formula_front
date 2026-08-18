@@ -39,8 +39,8 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
         </p>
       </div>
 
-      <div className="flex flex-col items-center justify-center px-4 py-12 sm:px-6">
-        <div className="w-full max-w-sm">
+      <div className="flex min-w-0 flex-col items-center justify-center px-4 py-12 sm:px-6">
+        <div className="w-full min-w-0 max-w-sm">
           <div className="mb-8 lg:hidden">
             <Logo />
           </div>

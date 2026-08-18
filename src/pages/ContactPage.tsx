@@ -1,25 +1,48 @@
-import { useState } from "react";
-import { Phone, Mail, MapPin, Clock, Send } from "lucide-react";
+import { useState, type FormEvent } from "react";
+import { Phone, Mail, MapPin, Clock, Send, AtSign, FileText } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/app/providers/toast-context";
+import { useCreateContact } from "@/hooks/useContacts";
+import { CONTACT_SUBJECT_LABELS } from "@/types/contact";
+import type { ContactSubject } from "@/types/contact";
+import type { ApiError } from "@/types/common";
+
+const EMPTY_FORM = {
+  full_name: "",
+  email: "",
+  phone: "",
+  subject: "" as ContactSubject | "",
+  message: "",
+};
 
 export function ContactPage() {
   const { push } = useToast();
-  const [submitting, setSubmitting] = useState(false);
+  const { mutateAsync, isPending } = useCreateContact();
+  const [form, setForm] = useState(EMPTY_FORM);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setSubmitting(true);
-    // Não existe endpoint de contato na API — a mensagem é apenas
-    // simulada localmente. Trocar por chamada real quando disponível.
-    setTimeout(() => {
-      setSubmitting(false);
+    if (!form.subject) {
+      push("Selecione um assunto.", "error");
+      return;
+    }
+    try {
+      await mutateAsync({
+        full_name: form.full_name,
+        email: form.email,
+        phone: form.phone,
+        subject: form.subject,
+        message: form.message,
+      });
       push("Mensagem enviada! Retornaremos em breve.", "success");
-      (e.target as HTMLFormElement).reset();
-    }, 900);
+      setForm(EMPTY_FORM);
+    } catch (err) {
+      const detail = (err as ApiError).detail;
+      push(typeof detail === "string" ? detail : "Não foi possível enviar sua mensagem.", "error");
+    }
   }
 
   return (
@@ -30,18 +53,53 @@ export function ContactPage() {
       <div className="mt-10 grid gap-10 lg:grid-cols-5">
         <form onSubmit={handleSubmit} className="space-y-5 lg:col-span-3">
           <div className="grid gap-5 sm:grid-cols-2">
-            <Input label="Nome completo" placeholder="Digite seu nome" required />
-            <Input label="E-mail" type="email" placeholder="Digite seu e-mail" required />
+            <Input
+              label="Nome completo"
+              placeholder="Digite seu nome"
+              value={form.full_name}
+              onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
+              required
+            />
+            <Input
+              label="E-mail"
+              type="email"
+              placeholder="Digite seu e-mail"
+              value={form.email}
+              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+              required
+            />
           </div>
-          <Select label="Assunto" defaultValue="">
-            <option value="" disabled>Selecione um assunto</option>
-            <option value="agendamento">Agendamento</option>
-            <option value="duvida">Dúvida</option>
-            <option value="elogio">Elogio</option>
-            <option value="reclamacao">Reclamação</option>
+          <Input
+            label="Telefone / WhatsApp"
+            placeholder="(xx) xxxxx-xxxx"
+            value={form.phone}
+            onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+            required
+          />
+          <Select
+            label="Assunto"
+            value={form.subject}
+            onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value as ContactSubject }))}
+            required
+          >
+            <option value="" disabled>
+              Selecione um assunto
+            </option>
+            {Object.entries(CONTACT_SUBJECT_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
           </Select>
-          <Textarea label="Mensagem" placeholder="Digite sua mensagem" required rows={5} />
-          <Button type="submit" isLoading={submitting} size="lg">
+          <Textarea
+            label="Mensagem"
+            placeholder="Digite sua mensagem"
+            value={form.message}
+            onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
+            required
+            rows={5}
+          />
+          <Button type="submit" isLoading={isPending} size="lg">
             <Send className="h-4 w-4" /> Enviar Mensagem
           </Button>
         </form>
@@ -73,6 +131,27 @@ export function ContactPage() {
             <div>
               <p className="text-sm text-bone-100">Horário</p>
               <p className="text-sm text-bone-500">Seg a Sáb: 08h–19h </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-card border border-ink-700 bg-ink-800/60 p-4">
+            <AtSign className="h-5 w-5 shrink-0 text-gold-400" />
+            <div>
+              <p className="text-sm text-bone-100">Instagram</p>
+              <a
+                href="https://www.instagram.com/_formuladabeleza/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-bone-500 hover:text-gold-400"
+              >
+                @_formuladabeleza
+              </a>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-card border border-ink-700 bg-ink-800/60 p-4">
+            <FileText className="h-5 w-5 shrink-0 text-gold-400" />
+            <div>
+              <p className="text-sm text-bone-100">CNPJ</p>
+              <p className="text-sm text-bone-500">00.000.000/0001-00</p>
             </div>
           </div>
         </div>

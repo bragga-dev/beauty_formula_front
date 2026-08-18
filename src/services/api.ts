@@ -5,6 +5,15 @@ import type { ApiError } from "@/types/common";
 
 export const api = axios.create({
   baseURL: API_URL,
+  // O refresh token vive num cookie httpOnly setado pelo backend — sem
+  // isso o browser não manda o cookie em requisições cross-origin
+  // (front em :5173/:3000, back em :8000) e o refresh nunca funcionaria.
+  withCredentials: true,
+  // No plano free do ngrok, toda requisição pro domínio *.ngrok-free.dev
+  // (inclusive chamadas de API via fetch/axios) recebe uma página HTML
+  // de aviso em vez da resposta real, a menos que esse header seja
+  // enviado. Não atrapalha em nada quando a API_URL não é do ngrok.
+  headers: { "ngrok-skip-browser-warning": "true" },
 });
 
 api.interceptors.request.use((config) => {
@@ -43,12 +52,6 @@ api.interceptors.response.use(
       !originalRequest._retry &&
       !isAuthEndpoint
     ) {
-      const refresh = tokenStorage.getRefresh();
-      if (!refresh) {
-        tokenStorage.clear();
-        return Promise.reject(normalizeError(error));
-      }
-
       originalRequest._retry = true;
 
       if (isRefreshing) {
@@ -63,9 +66,15 @@ api.interceptors.response.use(
 
       isRefreshing = true;
       try {
+        // Sem body: o refresh token vai sozinho no cookie httpOnly
+        // (withCredentials acima cuida de mandar ele).
         const { data } = await axios.post<{ access: string }>(
           `${API_URL}/auth/refresh`,
-          { refresh },
+          {},
+          {
+            withCredentials: true,
+            headers: { "ngrok-skip-browser-warning": "true" },
+          },
         );
         tokenStorage.setAccess(data.access);
         resolveQueue(data.access);
@@ -86,12 +95,32 @@ api.interceptors.response.use(
 );
 
 function normalizeError(error: AxiosError): ApiError {
-  const data = error.response?.data as { detail?: string } | undefined;
+  const data = error.response?.data as { detail?: unknown } | undefined;
   if (!error.response) {
     return { detail: "Falha de conexão. Verifique sua internet e tente novamente." };
   }
   return {
-    detail: data?.detail ?? "Ocorreu um erro inesperado. Tente novamente.",
+    detail: extractDetailMessage(data?.detail),
     status: error.response.status,
   };
+}
+
+// O back (Django Ninja / Pydantic) responde erro de validação como uma
+// LISTA de objetos ({loc, msg, type, ...}), não como string. Em algum
+// lugar da UI isso quase sempre acaba indo direto pra dentro de um
+// <p>{mensagem}</p> — e o React derruba a árvore inteira (tela preta)
+// ao tentar renderizar objeto como filho. Normalizamos tudo pra string
+// aqui, num único lugar, pra nenhuma tela precisar se preocupar com isso.
+function extractDetailMessage(detail: unknown): string {
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    const messages = detail
+      .map((item) => (item && typeof item === "object" && "msg" in item ? String((item as { msg: unknown }).msg) : null))
+      .filter((msg): msg is string => Boolean(msg));
+    if (messages.length) return messages.join(" ");
+  }
+  if (detail && typeof detail === "object" && "msg" in detail) {
+    return String((detail as { msg: unknown }).msg);
+  }
+  return "Ocorreu um erro inesperado. Tente novamente.";
 }

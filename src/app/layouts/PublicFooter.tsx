@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { AtSign, Link2, MapPin, Phone, Clock } from "lucide-react";
+import { MapPin, Phone, Clock } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
+import { PaymentBrands } from "@/components/ui/PaymentBrands";
 import { ROUTES } from "@/constants/routes";
 
 export function PublicFooter() {
@@ -12,14 +13,7 @@ export function PublicFooter() {
           <p className="mt-4 text-sm text-bone-500">
             Estilo, confiança e atitude em cada detalhe. Barbearia &amp; salão de beleza.
           </p>
-          <div className="mt-4 flex gap-3">
-            <a href="#" aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-600 text-bone-400 transition-colors hover:border-gold-400 hover:text-gold-400">
-              <AtSign className="h-4 w-4" />
-            </a>
-            <a href="#" aria-label="Facebook" className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-600 text-bone-400 transition-colors hover:border-gold-400 hover:text-gold-400">
-              <Link2 className="h-4 w-4" />
-            </a>
-          </div>
+         
         </div>
 
         <div>
@@ -46,9 +40,14 @@ export function PublicFooter() {
             <li className="flex items-center gap-2"><MapPin className="h-4 w-4 text-bone-600" /> Av. Franz Gedeon, Centro —  Praça da Bandeira</li>
           </ul>
         </div>
+
+        <div className="md:col-span-4">
+          <h4 className="text-xs uppercase tracking-widest text-gold-400">Formas de pagamento</h4>
+          <PaymentBrands className="mt-4" />
+        </div>
       </div>
       <div className="border-t border-ink-700 py-5 text-center text-xs text-bone-600">
-        © {new Date().getFullYear()} Fórmula da Beleza. Todos os direitos reservados.
+        © {new Date().getFullYear()} Fórmula da Beleza. Todos os direitos reservados. · CNPJ 00.000.000/0001-00
       </div>
     </footer>
   );

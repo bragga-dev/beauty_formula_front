@@ -1,11 +1,11 @@
 import { api } from "./api";
-import type { ClientProfile, EmployeeProfile } from "@/types/user";
+import type { ClientProfile, EmployeeProfile, Gender } from "@/types/user";
 
 export interface ClientUpdateInput {
   username?: string;
   first_name?: string;
   last_name?: string;
-  gender?: "male" | "female" | "other";
+  gender?: Gender;
   phone?: string;
   birth_date?: string;
   instagram?: string;
