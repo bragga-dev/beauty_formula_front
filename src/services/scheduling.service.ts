@@ -4,6 +4,7 @@ import type {
   SchedulingCreateInput,
   SchedulingOut,
   SchedulingPrivateOut,
+  SchedulingRescheduleInput,
   SchedulingUpdateInput,
 } from "@/types/scheduling.types";
 import type { PageOut } from "@/types/common";
@@ -37,6 +38,17 @@ export const schedulingService = {
   cancelMine: (schedulingId: string, payload: SchedulingCancelInput) =>
     api
       .patch<SchedulingOut>(`/scheduling/cancel-my-scheduling/${schedulingId}`, payload)
+      .then((r) => r.data),
+
+  /**
+   * Reagendamento: não altera o registro atual (marcado como RESCHEDULED
+   * no backend) — retorna o NOVO agendamento já CONFIRMED. Aceita trocar
+   * serviço/funcionário opcionalmente, mas o uso padrão só manda o novo
+   * `scheduled_time`.
+   */
+  rescheduleMine: (schedulingId: string, payload: SchedulingRescheduleInput) =>
+    api
+      .patch<SchedulingOut>(`/scheduling/reschedule-my-scheduling/${schedulingId}`, payload)
       .then((r) => r.data),
 
   /**

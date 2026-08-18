@@ -4,6 +4,7 @@ import type {
   SchedulingCancelInput,
   SchedulingCreateInput,
   SchedulingFilter,
+  SchedulingRescheduleInput,
   SchedulingUpdateInput,
 } from "@/types/scheduling.types";
 
@@ -68,12 +69,18 @@ export function useSchedulingMutations() {
     onSuccess: invalidate,
   });
 
+  const reschedule = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: SchedulingRescheduleInput }) =>
+      schedulingService.rescheduleMine(id, payload),
+    onSuccess: invalidate,
+  });
+
   const confirm = useMutation({
     mutationFn: (id: string) => schedulingService.confirmMine(id),
     onSuccess: invalidate,
   });
 
-  return { create, cancel, confirm };
+  return { create, cancel, reschedule, confirm };
 }
 
 // ═══════════════════════════════════════════════════════════════════

@@ -79,6 +79,18 @@ export interface SchedulingUpdateInput {
   notes?: string;
 }
 
+/**
+ * Payload de `/scheduling/reschedule-my-scheduling/{id}` — só o novo
+ * horário é obrigatório; serviço/funcionário são opcionais (mantém os
+ * atuais quando omitidos). Ver `SchedulingRescheduleIn` no backend.
+ */
+export interface SchedulingRescheduleInput {
+  scheduled_time: string;
+  service_id?: string;
+  employee_id?: string;
+  notes?: string;
+}
+
 /** Corresponde ao schema `SchedulingPrivateOut` do backend — visão administrativa. */
 export interface SchedulingPrivateOut extends SchedulingOut {
   is_active: boolean;
@@ -111,6 +123,14 @@ export function canClientCancelScheduling(scheduling: SchedulingOut): boolean {
  */
 export function canClientConfirmScheduling(scheduling: SchedulingOut): boolean {
   return scheduling.status === "created";
+}
+
+/**
+ * Reagendar (pelo cliente) só vale com status CONFIRMED — espelha
+ * `Scheduling.can_be_rescheduled` no backend.
+ */
+export function canClientRescheduleScheduling(scheduling: SchedulingOut): boolean {
+  return scheduling.status === "confirmed";
 }
 
 /**

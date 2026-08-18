@@ -217,7 +217,7 @@ export function DashboardUsersPage() {
             setPage(1);
           }}
         >
-          <option value="">Todos os roles</option>
+          <option value="">Todos os usuários</option>
           <option value="admin">Administrador</option>
           <option value="employee">Funcionário</option>
           <option value="client">Cliente</option>

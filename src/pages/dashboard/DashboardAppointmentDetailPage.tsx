@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, CalendarClock, Clock, Scissors, Star, User, XCircle, StickyNote } from "lucide-react";
+import { ArrowLeft, CalendarClock, Clock, RefreshCw, Scissors, Star, User, XCircle, StickyNote } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { useScheduling, useSchedulingMutations } from "@/hooks/useScheduling";
 import { useMyRatings } from "@/hooks/useRatings";
 import { CancelAppointmentModal } from "@/features/appointments/CancelAppointmentModal";
+import { RescheduleAppointmentModal } from "@/features/appointments/RescheduleAppointmentModal";
 import { RateAppointmentModal } from "@/features/ratings/RateAppointmentModal";
 import { useToast } from "@/app/providers/toast-context";
 import { formatCurrencyBRL, formatDate, formatDuration, formatTime, initials } from "@/utils/format";
@@ -18,6 +19,7 @@ import {
   SCHEDULING_STATUS_BADGE,
   SCHEDULING_STATUS_LABELS,
   canClientCancelScheduling,
+  canClientRescheduleScheduling,
   getSchedulingEndTime,
 } from "@/types/scheduling.types";
 import type { ApiError } from "@/types/common";
@@ -31,6 +33,7 @@ export function DashboardAppointmentDetailPage() {
   const { push } = useToast();
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
 
   async function handleCancel(reason: string) {
     if (!scheduling) return;
@@ -181,6 +184,11 @@ export function DashboardAppointmentDetailPage() {
                 <Star className="h-4 w-4" /> {existingRating ? "Editar avaliação" : "Avaliar atendimento"}
               </Button>
             )}
+            {canClientRescheduleScheduling(scheduling) && (
+              <Button variant="outline" onClick={() => setRescheduleOpen(true)}>
+                <RefreshCw className="h-4 w-4" /> Reagendar
+              </Button>
+            )}
             {canClientCancelScheduling(scheduling) && (
               <Button variant="danger" onClick={() => setCancelOpen(true)}>
                 <XCircle className="h-4 w-4" /> Cancelar agendamento
@@ -196,6 +204,13 @@ export function DashboardAppointmentDetailPage() {
         isLoading={cancel.isPending}
         onConfirm={handleCancel}
         onClose={() => setCancelOpen(false)}
+      />
+
+      <RescheduleAppointmentModal
+        open={rescheduleOpen}
+        scheduling={scheduling}
+        onClose={() => setRescheduleOpen(false)}
+        onRescheduled={(updated) => navigate(ROUTES.dashboardAppointmentDetail(updated.id))}
       />
 
       <RateAppointmentModal
