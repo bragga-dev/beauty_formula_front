@@ -9,6 +9,11 @@ export const api = axios.create({
   // isso o browser não manda o cookie em requisições cross-origin
   // (front em :5173/:3000, back em :8000) e o refresh nunca funcionaria.
   withCredentials: true,
+  // No plano free do ngrok, toda requisição pro domínio *.ngrok-free.dev
+  // (inclusive chamadas de API via fetch/axios) recebe uma página HTML
+  // de aviso em vez da resposta real, a menos que esse header seja
+  // enviado. Não atrapalha em nada quando a API_URL não é do ngrok.
+  headers: { "ngrok-skip-browser-warning": "true" },
 });
 
 api.interceptors.request.use((config) => {
@@ -66,7 +71,10 @@ api.interceptors.response.use(
         const { data } = await axios.post<{ access: string }>(
           `${API_URL}/auth/refresh`,
           {},
-          { withCredentials: true },
+          {
+            withCredentials: true,
+            headers: { "ngrok-skip-browser-warning": "true" },
+          },
         );
         tokenStorage.setAccess(data.access);
         resolveQueue(data.access);
