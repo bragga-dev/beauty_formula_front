@@ -66,6 +66,9 @@ const DashboardUsersPage = lazy(() =>
 const DashboardTeamPage = lazy(() =>
   import("@/pages/dashboard/DashboardTeamPage").then((m) => ({ default: m.DashboardTeamPage })),
 );
+const DashboardEmployeeDetailPage = lazy(() =>
+  import("@/pages/dashboard/DashboardEmployeeDetailPage").then((m) => ({ default: m.DashboardEmployeeDetailPage })),
+);
 const DashboardAppointmentsPage = lazy(() =>
   import("@/pages/dashboard/DashboardAppointmentsPage").then((m) => ({ default: m.DashboardAppointmentsPage })),
 );
@@ -155,6 +158,7 @@ export function AppRouter() {
               <Route path={ROUTES.dashboardContacts} element={<DashboardContactsPage />} />
               <Route path={ROUTES.dashboardUsers} element={<DashboardUsersPage />} />
               <Route path={ROUTES.dashboardTeam} element={<DashboardTeamPage />} />
+              <Route path="/painel/equipe/:employeeId" element={<DashboardEmployeeDetailPage />} />
               <Route path={ROUTES.dashboardAppointments} element={<DashboardAppointmentsPage />} />
               <Route path="/painel/agendamentos/:appointmentId" element={<DashboardAppointmentAdminDetailPage />} />
               <Route path={ROUTES.dashboardPayments} element={<DashboardPaymentsPage />} />

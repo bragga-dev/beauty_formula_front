@@ -28,6 +28,7 @@ export const ROUTES = {
   dashboardContacts: "/painel/contatos",
   dashboardUsers: "/painel/usuarios",
   dashboardTeam: "/painel/equipe",
+  dashboardTeamDetail: (id: string) => `/painel/equipe/${id}`,
   dashboardAppointments: "/painel/agendamentos",
   dashboardAppointmentAdminDetail: (id: string) => `/painel/agendamentos/${id}`,
   dashboardMyServices: "/painel/meus-servicos",
