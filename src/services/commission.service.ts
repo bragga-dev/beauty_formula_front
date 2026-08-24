@@ -5,10 +5,10 @@ import type {
   CommissionBulkMarkPaidOut,
   CommissionBulkStatusInput,
   CommissionBulkStatusOut,
-  CommissionCreateInput,
   CommissionFilters,
   CommissionOut,
   CommissionTotalsOut,
+  CommissionUpdateCompetenciaInput,
   CommissionUpdateValueInput,
 } from "@/types/commission";
 
@@ -16,18 +16,13 @@ import type {
  * Consome a app `payment` do backend (model `EmployeeCommission`, router
  * montado em `/commissions/`). Ver
  * `beauty_formula/apps/payment/api/employee_commission.py`.
+ *
+ * Não existe criação manual aqui: toda comissão nasce sozinha, no
+ * backend, no momento em que o atendimento correspondente é concluído
+ * (`generate_commission_for_completed_scheduling`). O front só lê e
+ * gerencia o que já foi gerado.
  */
 export const commissionService = {
-  // ═══════════════════════════════════════════════════════════════
-  // Admin — geração manual (caso excepcional; o fluxo normal é
-  // automático, disparado pelo backend quando o atendimento é
-  // concluído — ver `generate_commission_for_completed_scheduling`)
-  // ═══════════════════════════════════════════════════════════════
-
-  /** Gera a comissão de UM atendimento concluído (valor calculado automaticamente). */
-  create: (payload: CommissionCreateInput) =>
-    api.post<CommissionOut>("/commissions/create", payload).then((r) => r.data),
-
   // ═══════════════════════════════════════════════════════════════
   // Admin — listagem / detalhe / edição pontual
   // ═══════════════════════════════════════════════════════════════
@@ -42,6 +37,7 @@ export const commissionService = {
           status: filters.status || undefined,
           start_date: filters.startDate || undefined,
           end_date: filters.endDate || undefined,
+          competencia: filters.competencia || undefined,
         },
       })
       .then((r) => r.data),
@@ -50,13 +46,14 @@ export const commissionService = {
     api.get<CommissionOut>(`/commissions/${commissionId}`).then((r) => r.data),
 
   /** Soma das comissões por status (pendente/paga/cancelada), com os mesmos filtros da listagem. */
-  getTotals: (filters: Pick<CommissionFilters, "employeeId" | "startDate" | "endDate">) =>
+  getTotals: (filters: Pick<CommissionFilters, "employeeId" | "startDate" | "endDate" | "competencia">) =>
     api
       .get<CommissionTotalsOut>("/commissions/summary", {
         params: {
           employee_id: filters.employeeId || undefined,
           start_date: filters.startDate || undefined,
           end_date: filters.endDate || undefined,
+          competencia: filters.competencia || undefined,
         },
       })
       .then((r) => r.data),
@@ -65,6 +62,14 @@ export const commissionService = {
     api
       .patch<CommissionOut>(`/commissions/update-value/${commissionId}`, {
         commission_value: payload.commission_value,
+      })
+      .then((r) => r.data),
+
+  /** Corrige o mês de competência de uma comissão — permitido em qualquer status. */
+  updateCompetencia: (commissionId: string, payload: CommissionUpdateCompetenciaInput) =>
+    api
+      .patch<CommissionOut>(`/commissions/update-competencia/${commissionId}`, {
+        competencia: payload.competencia,
       })
       .then((r) => r.data),
 

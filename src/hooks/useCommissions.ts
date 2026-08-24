@@ -4,6 +4,7 @@ import type {
   CommissionBulkMarkPaidInput,
   CommissionBulkStatusInput,
   CommissionFilters,
+  CommissionUpdateCompetenciaInput,
   CommissionUpdateValueInput,
 } from "@/types/commission";
 
@@ -32,7 +33,9 @@ export function useCommissionDetail(commissionId?: string) {
 }
 
 /** Soma das comissões por status (pendente/paga/cancelada) — total a pagar ao funcionário. */
-export function useCommissionTotals(filters: Pick<CommissionFilters, "employeeId" | "startDate" | "endDate">) {
+export function useCommissionTotals(
+  filters: Pick<CommissionFilters, "employeeId" | "startDate" | "endDate" | "competencia">,
+) {
   return useQuery({
     queryKey: ["commissions", "totals", filters],
     queryFn: () => commissionService.getTotals(filters),
@@ -48,6 +51,12 @@ export function useCommissionMutations() {
   const updateValue = useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: CommissionUpdateValueInput }) =>
       commissionService.updateValue(id, payload),
+    onSuccess: invalidate,
+  });
+
+  const updateCompetencia = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: CommissionUpdateCompetenciaInput }) =>
+      commissionService.updateCompetencia(id, payload),
     onSuccess: invalidate,
   });
 
@@ -78,6 +87,7 @@ export function useCommissionMutations() {
 
   return {
     updateValue,
+    updateCompetencia,
     markAsPaid,
     markManyAsPaid,
     revertToPending,

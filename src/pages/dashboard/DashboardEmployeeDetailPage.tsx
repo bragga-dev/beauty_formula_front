@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   AtSign,
   Ban,
+  CalendarCog,
   CheckCheck,
   CheckCircle2,
   Pencil,
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { Select } from "@/components/ui/Select";
 import { Input } from "@/components/ui/Input";
+import { MonthPicker } from "@/components/ui/MonthPicker";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { MobileRowCard } from "@/components/tables/MobileRowCard";
@@ -27,9 +29,10 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { useTeamMember } from "@/hooks/useTeam";
 import { useCommissions, useCommissionMutations, useCommissionTotals } from "@/hooks/useCommissions";
 import { EditCommissionValueModal } from "@/features/team/EditCommissionValueModal";
+import { EditCommissionCompetenciaModal } from "@/features/team/EditCommissionCompetenciaModal";
 import { EmployeeMonthCalendar } from "@/features/team/EmployeeMonthCalendar";
 import { useToast } from "@/app/providers/toast-context";
-import { formatCurrencyBRL, formatDate, initials } from "@/utils/format";
+import { formatCurrencyBRL, formatDate, formatMonthYear, initials, monthInputToDate } from "@/utils/format";
 import { ROUTES } from "@/constants/routes";
 import {
   COMMISSION_STATUS_BADGE,
@@ -51,20 +54,25 @@ export function DashboardEmployeeDetailPage() {
   const [statusFilter, setStatusFilter] = useState<CommissionStatus | "">("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [competenciaFilter, setCompetenciaFilter] = useState(""); // "" ou "yyyy-MM"
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const competencia = competenciaFilter ? monthInputToDate(competenciaFilter) : undefined;
 
   const {
     data: commissions,
     isLoading: isLoadingCommissions,
     isError: isCommissionsError,
     refetch: refetchCommissions,
-  } = useCommissions({ employeeId, status: statusFilter || undefined, startDate, endDate }, page, 10);
+  } = useCommissions({ employeeId, status: statusFilter || undefined, startDate, endDate, competencia }, page, 10);
 
-  const { data: totals } = useCommissionTotals({ employeeId, startDate, endDate });
+  const { data: totals } = useCommissionTotals({ employeeId, startDate, endDate, competencia });
 
-  const { updateValue, markAsPaid, markManyAsPaid, revertToPending, cancel } = useCommissionMutations();
+  const { updateValue, updateCompetencia, markAsPaid, markManyAsPaid, revertToPending, cancel } =
+    useCommissionMutations();
 
   const [editingCommission, setEditingCommission] = useState<CommissionOut | null>(null);
+  const [editingCompetencia, setEditingCompetencia] = useState<CommissionOut | null>(null);
   const [cancelingCommission, setCancelingCommission] = useState<CommissionOut | null>(null);
   const [revertingCommission, setRevertingCommission] = useState<CommissionOut | null>(null);
   const [confirmingBulkPay, setConfirmingBulkPay] = useState(false);
@@ -112,6 +120,17 @@ export function DashboardEmployeeDetailPage() {
       await updateValue.mutateAsync({ id: editingCommission.id, payload: { commission_value: value } });
       push("Valor da comissão atualizado.", "success");
       setEditingCommission(null);
+    } catch (err) {
+      push((err as ApiError).detail as string, "error");
+    }
+  }
+
+  async function handleEditCompetencia(competenciaValue: string) {
+    if (!editingCompetencia) return;
+    try {
+      await updateCompetencia.mutateAsync({ id: editingCompetencia.id, payload: { competencia: competenciaValue } });
+      push("Competência da comissão atualizada.", "success");
+      setEditingCompetencia(null);
     } catch (err) {
       push((err as ApiError).detail as string, "error");
     }
@@ -185,6 +204,28 @@ export function DashboardEmployeeDetailPage() {
     },
     { header: "Data", cell: (c) => formatDate(c.scheduled_time), hideOnMobile: true },
     {
+      header: "Competência",
+      cell: (c) => (
+        <button
+          type="button"
+          onClick={() => setEditingCompetencia(c)}
+          className="flex items-center gap-1.5 capitalize text-bone-200 hover:text-gold-400"
+          title={
+            c.competencia_was_adjusted
+              ? `Ajustada de ${formatMonthYear(c.competencia_original)}${
+                  c.competencia_changed_by_name ? ` por ${c.competencia_changed_by_name}` : ""
+                }`
+              : "Corrigir competência"
+          }
+        >
+          {formatMonthYear(c.competencia)}
+          {c.competencia_was_adjusted && <span className="h-1.5 w-1.5 rounded-full bg-gold-400" />}
+          <Pencil className="h-3 w-3 opacity-50" />
+        </button>
+      ),
+      hideOnMobile: true,
+    },
+    {
       header: "% Comissão",
       cell: (c) => `${Number(c.commission_percentage)}%`,
       hideOnMobile: true,
@@ -233,11 +274,18 @@ export function DashboardEmployeeDetailPage() {
         badges={<Badge variant={COMMISSION_STATUS_BADGE[c.status]}>{COMMISSION_STATUS_LABELS[c.status]}</Badge>}
         meta={[
           { label: "Data", value: formatDate(c.scheduled_time) },
+          {
+            label: "Competência",
+            value: formatMonthYear(c.competencia) + (c.competencia_was_adjusted ? " (ajustada)" : ""),
+          },
           { label: "% Comissão", value: `${Number(c.commission_percentage)}%` },
           { label: "Valor", value: formatCurrencyBRL(c.commission_value) },
         ]}
         actions={
           <>
+            <Button variant="ghost" size="icon" onClick={() => setEditingCompetencia(c)} aria-label="Corrigir competência">
+              <CalendarCog className="h-4 w-4" />
+            </Button>
             {c.status === "pending" && (
               <>
                 <input
@@ -324,6 +372,10 @@ export function DashboardEmployeeDetailPage() {
             <h2 className="text-xl">Comissões</h2>
           </div>
         </div>
+        <p className="mt-1 text-xs text-bone-600">
+          Gerada automaticamente, com status pendente, assim que o atendimento correspondente é marcado como
+          concluído. Não existe geração manual.
+        </p>
 
         {totals && (
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
@@ -351,8 +403,19 @@ export function DashboardEmployeeDetailPage() {
           </div>
         )}
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <MonthPicker
+            label="Mês"
+            value={competenciaFilter}
+            onChange={(value) => {
+              setCompetenciaFilter(value);
+              setPage(1);
+            }}
+            allowEmpty
+            hint="Mês em que o atendimento foi concluído"
+          />
           <Select
+            label="Status"
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value as CommissionStatus | "");
@@ -367,9 +430,8 @@ export function DashboardEmployeeDetailPage() {
             ))}
           </Select>
           <Input
-            label=""
+            label="De (opcional)"
             type="date"
-            placeholder="Data inicial"
             value={startDate}
             onChange={(e) => {
               setStartDate(e.target.value);
@@ -377,9 +439,8 @@ export function DashboardEmployeeDetailPage() {
             }}
           />
           <Input
-            label=""
+            label="Até (opcional)"
             type="date"
-            placeholder="Data final"
             value={endDate}
             min={startDate || undefined}
             onChange={(e) => {
@@ -388,6 +449,12 @@ export function DashboardEmployeeDetailPage() {
             }}
           />
         </div>
+        <p className="mt-2 text-xs text-bone-600">
+          <strong className="text-bone-400">Mês</strong> filtra pela competência (mês de referência da comissão —
+          normalmente o mês em que o atendimento foi concluído). <strong className="text-bone-400">De/Até</strong>{" "}
+          é um filtro alternativo pela data exata do atendimento, útil pra períodos que não fecham num mês
+          redondo (ex.: quinzena). Use um ou outro.
+        </p>
 
         {selectablePendingIds.length > 0 && (
           <div className="mt-4 flex flex-wrap items-center gap-3 rounded-card border border-ink-700 bg-ink-800/50 px-4 py-3">
@@ -449,6 +516,14 @@ export function DashboardEmployeeDetailPage() {
         isLoading={updateValue.isPending}
         onClose={() => setEditingCommission(null)}
         onSubmit={handleEditValue}
+      />
+
+      <EditCommissionCompetenciaModal
+        open={!!editingCompetencia}
+        commission={editingCompetencia}
+        isLoading={updateCompetencia.isPending}
+        onClose={() => setEditingCompetencia(null)}
+        onSubmit={handleEditCompetencia}
       />
 
       <ConfirmDialog

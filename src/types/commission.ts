@@ -1,6 +1,13 @@
 /**
  * Comissões — espelham `employee_commission_schema.py` do backend.
  * Router montado em `/commissions/` (ver `payment/api/employee_commission.py`).
+ *
+ * Geração é 100% automática: o backend cria a comissão (status pending)
+ * assim que o atendimento correspondente é marcado como concluído
+ * (`generate_commission_for_completed_scheduling`, disparado dentro da
+ * mesma transação de `complete_scheduling_for_employee`). Não existe
+ * criação manual no front — o admin só lista, filtra, corrige valor/
+ * competência pontualmente, marca como paga/reverte/cancela.
  */
 
 /** Espelha `EmployeeCommission.CommissionStatus`. */
@@ -39,18 +46,35 @@ export interface CommissionOut {
   commission_value: string;
   status: CommissionStatus;
   paid_at?: string | null;
+  /**
+   * Mês de referência EFETIVO da comissão (yyyy-mm-01) — o dado que entra
+   * aqui é sempre um mês (dia normalizado pro dia 1). Calculado
+   * automaticamente pelo backend a partir do mês em que o atendimento foi
+   * concluído (`scheduling.completed_at`). Só é alterado se o admin fizer
+   * uma correção pontual (ver `competencia_was_adjusted` abaixo).
+   */
+  competencia: string;
+  /** Snapshot imutável do mês calculado automaticamente na criação — nunca muda. */
+  competencia_original: string;
+  /** true quando `competencia` foi corrigida manualmente e diverge de `competencia_original`. */
+  competencia_was_adjusted: boolean;
+  competencia_changed_by_name?: string | null;
+  competencia_changed_at?: string | null;
   created_at: string;
   updated_at: string;
-}
-
-/** Gera a comissão de UM atendimento já concluído (valor calculado automaticamente). */
-export interface CommissionCreateInput {
-  scheduling_id: string;
 }
 
 /** Ajuste manual pontual do valor de uma comissão ainda pending. */
 export interface CommissionUpdateValueInput {
   commission_value: number;
+}
+
+/**
+ * Correção manual do mês de competência de UMA comissão — qualquer status.
+ * Aceita qualquer dia do mês desejado; normalizado pro dia 1 no backend.
+ */
+export interface CommissionUpdateCompetenciaInput {
+  competencia: string; // yyyy-mm-dd
 }
 
 /** Filtros combináveis para listagem — todos opcionais. */
@@ -59,6 +83,8 @@ export interface CommissionFilters {
   status?: CommissionStatus;
   startDate?: string;
   endDate?: string;
+  /** Filtra pelo mês de competência (yyyy-mm-dd, qualquer dia do mês desejado). */
+  competencia?: string;
 }
 
 /**
