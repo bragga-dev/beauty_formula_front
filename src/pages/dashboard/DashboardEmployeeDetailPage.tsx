@@ -27,6 +27,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { useTeamMember } from "@/hooks/useTeam";
 import { useCommissions, useCommissionMutations, useCommissionTotals } from "@/hooks/useCommissions";
 import { EditCommissionValueModal } from "@/features/team/EditCommissionValueModal";
+import { EmployeeMonthCalendar } from "@/features/team/EmployeeMonthCalendar";
 import { useToast } from "@/app/providers/toast-context";
 import { formatCurrencyBRL, formatDate, initials } from "@/utils/format";
 import { ROUTES } from "@/constants/routes";
@@ -309,6 +310,12 @@ export function DashboardEmployeeDetailPage() {
           </CardBody>
         )}
       </Card>
+
+      {employeeId && (
+        <div className="mt-8">
+          <EmployeeMonthCalendar employeeId={employeeId} />
+        </div>
+      )}
 
       <div className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
