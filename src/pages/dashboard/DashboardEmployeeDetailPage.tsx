@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowLeft,
   AtSign,
   Ban,
   CalendarCog,
+  CalendarDays,
   CheckCheck,
   CheckCircle2,
   Pencil,
   RotateCcw,
+  UserCog,
   Wallet,
 } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
@@ -20,6 +22,7 @@ import { Select } from "@/components/ui/Select";
 import { Input } from "@/components/ui/Input";
 import { MonthPicker } from "@/components/ui/MonthPicker";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Tabs, type TabItem } from "@/components/ui/Tabs";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { MobileRowCard } from "@/components/tables/MobileRowCard";
 import { Pagination } from "@/components/tables/Pagination";
@@ -31,6 +34,7 @@ import { useAvailableCompetencias, useCommissions, useCommissionMutations, useCo
 import { EditCommissionValueModal } from "@/features/team/EditCommissionValueModal";
 import { EditCommissionCompetenciaModal } from "@/features/team/EditCommissionCompetenciaModal";
 import { EmployeeMonthCalendar } from "@/features/team/EmployeeMonthCalendar";
+import { EditEmployeeForm } from "@/features/team/EditEmployeeForm";
 import { useToast } from "@/app/providers/toast-context";
 import { dateToMonthInput, formatCurrencyBRL, formatDate, formatMonthYear, initials, monthInputToDate } from "@/utils/format";
 import { ROUTES } from "@/constants/routes";
@@ -42,10 +46,29 @@ import {
 } from "@/types/commission";
 import type { ApiError } from "@/types/common";
 
+type TabValue = "calendario" | "comissoes" | "editar";
+
+const TABS: TabItem[] = [
+  { value: "calendario", label: "Calendário", icon: CalendarDays },
+  { value: "comissoes", label: "Comissões", icon: Wallet },
+  { value: "editar", label: "Editar Dados", icon: UserCog },
+];
+
 export function DashboardEmployeeDetailPage() {
   const { employeeId } = useParams<{ employeeId: string }>();
   const navigate = useNavigate();
   const { push } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const activeTab: TabValue = (searchParams.get("aba") as TabValue) || "calendario";
+
+  function handleTabChange(tab: string) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("aba", tab);
+      return next;
+    });
+  }
 
   const { data: employee, isLoading: isLoadingEmployee, isError: isEmployeeError, refetch: refetchEmployee } =
     useTeamMember(employeeId);
@@ -349,12 +372,6 @@ export function DashboardEmployeeDetailPage() {
               )}
             </div>
           </div>
-
-          <div className="flex flex-wrap gap-3">
-            <Button variant="outline" disabled title="Em breve">
-              <Pencil className="h-4 w-4" /> Editar perfil
-            </Button>
-          </div>
         </CardHeader>
 
         {employee.bio && (
@@ -364,12 +381,26 @@ export function DashboardEmployeeDetailPage() {
         )}
       </Card>
 
-      {employeeId && (
+      <div className="mt-8">
+        <Tabs items={TABS} value={activeTab} onChange={handleTabChange} />
+      </div>
+
+      {/* Aba: Calendário */}
+      {activeTab === "calendario" && employeeId && (
         <div className="mt-8">
           <EmployeeMonthCalendar employeeId={employeeId} />
         </div>
       )}
 
+      {/* Aba: Editar Dados */}
+      {activeTab === "editar" && (
+        <div className="mt-8">
+          <EditEmployeeForm employee={employee} />
+        </div>
+      )}
+
+      {/* Aba: Comissões */}
+      {activeTab === "comissoes" && (
       <div className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -515,6 +546,7 @@ export function DashboardEmployeeDetailPage() {
           )}
         </div>
       </div>
+      )}
 
       <EditCommissionValueModal
         open={!!editingCommission}
