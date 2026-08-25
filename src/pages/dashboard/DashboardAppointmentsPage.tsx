@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarClock, Eye, Pencil, XCircle } from "lucide-react";
+import { CalendarClock, Eye, XCircle } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { Pagination } from "@/components/tables/Pagination";
 import { useAdminSchedulings, useAdminSchedulingMutations } from "@/hooks/useScheduling";
 import { CancelAppointmentModal } from "@/features/appointments/CancelAppointmentModal";
-import { EditAppointmentModal } from "@/features/appointments/EditAppointmentModal";
+import { AdminRescheduleModal } from "@/features/appointments/AdminRescheduleModal";
 import { useToast } from "@/app/providers/toast-context";
 import { formatCurrencyBRL, formatDate, formatTime } from "@/utils/format";
 import { ROUTES } from "@/constants/routes";
@@ -50,11 +50,11 @@ export function DashboardAppointmentsPage() {
     setPage(1);
   }
 
-  async function handleEdit(payload: SchedulingUpdateInput) {
+  async function handleReschedule(payload: SchedulingUpdateInput) {
     if (!editing) return;
     try {
       await update.mutateAsync({ id: editing.id, payload });
-      push("Agendamento atualizado.", "success");
+      push("Agendamento reagendado com sucesso!", "success");
       setEditing(null);
     } catch (err) {
       push((err as ApiError).detail as string, "error");
@@ -151,7 +151,7 @@ export function DashboardAppointmentsPage() {
                           <XCircle className="h-4 w-4 text-danger-500" /> Cancelar
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => setEditing(scheduling)}>
-                          <Pencil className="h-4 w-4 text-gold-400" /> Editar
+                          <CalendarClock className="h-4 w-4 text-gold-400" /> Reagendar
                         </Button>
                       </>
                     )}
@@ -172,11 +172,11 @@ export function DashboardAppointmentsPage() {
         )}
       </div>
 
-      <EditAppointmentModal
+      <AdminRescheduleModal
         open={!!editing}
         scheduling={editing}
         isSubmitting={update.isPending}
-        onSubmit={handleEdit}
+        onSubmit={handleReschedule}
         onClose={() => setEditing(null)}
       />
 
