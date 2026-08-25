@@ -30,3 +30,14 @@ export function useEmployeeCalendar(employeeId?: string, month?: string) {
     enabled: !!employeeId && !!month,
   });
 }
+
+// Calendário mensal público (sem auth) — tela de perfil público do
+// funcionário, aba "Agenda". Query key própria (não compartilha cache
+// com a versão admin, que é outro endpoint com outro shape de dado).
+export function usePublicEmployeeCalendar(employeeId?: string, month?: string) {
+  return useQuery({
+    queryKey: ["availability", "public-employee-calendar", employeeId, month],
+    queryFn: () => availabilityService.getPublicEmployeeCalendar(employeeId as string, month as string),
+    enabled: !!employeeId && !!month,
+  });
+}

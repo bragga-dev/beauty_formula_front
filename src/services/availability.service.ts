@@ -1,7 +1,7 @@
 import { api } from "./api";
 import type { AvailabilitySlotOut } from "@/types/schedule";
 import type { EmployeeTeamOut } from "@/types/employee";
-import type { EmployeeCalendarOut } from "@/types/employeeCalendar";
+import type { EmployeeCalendarOut, PublicEmployeeCalendarOut } from "@/types/employeeCalendar";
 
 export const availabilityService = {
   getForEmployee: (employeeId: string, serviceId: string, date: string) =>
@@ -23,6 +23,16 @@ export const availabilityService = {
   getEmployeeCalendar: (employeeId: string, month: string) =>
     api
       .get<EmployeeCalendarOut>(`/availability/employee/${employeeId}/calendar`, {
+        params: { month },
+      })
+      .then((r) => r.data),
+
+  // Versão pública (sem auth) do calendário mensal, pra tela de perfil
+  // público do funcionário — sem client_name, com os intervalos
+  // realmente livres do dia em vez da lista de agendamentos.
+  getPublicEmployeeCalendar: (employeeId: string, month: string) =>
+    api
+      .get<PublicEmployeeCalendarOut>(`/availability/employee/${employeeId}/public-calendar`, {
         params: { month },
       })
       .then((r) => r.data),

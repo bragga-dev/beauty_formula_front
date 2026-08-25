@@ -54,3 +54,34 @@ export interface EmployeeBookingWindowOut {
   employee_id: string;
   booking_window_days: number;
 }
+
+/**
+ * Versão pública do calendário mensal (sem auth) — mesmo expediente e
+ * bloqueios da view admin, mas troca `schedulings` (que leva `client_name`)
+ * pelos intervalos realmente livres do dia (`free_intervals`), já
+ * descontando expediente, bloqueios e agendamentos existentes.
+ * Endpoint: `GET /availability/employee/{employee_id}/public-calendar?month=yyyy-mm-dd`
+ */
+export interface FreeIntervalOut {
+  start_time: string;
+  end_time: string;
+}
+
+export interface PublicEmployeeCalendarDayOut {
+  date: string; // yyyy-mm-dd
+  weekday: number; // 0 = segunda ... 6 = domingo
+  weekday_label: string;
+  is_within_booking_window: boolean;
+  working_hours: WorkingHoursBlockOut[];
+  time_off_blocks: TimeOffBlockOut[];
+  free_intervals: FreeIntervalOut[];
+  has_open_slots: boolean;
+}
+
+export interface PublicEmployeeCalendarOut {
+  employee_id: string;
+  employee_name: string;
+  month: string; // yyyy-mm-01
+  booking_window_days: number;
+  days: PublicEmployeeCalendarDayOut[];
+}
