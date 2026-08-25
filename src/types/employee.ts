@@ -35,6 +35,18 @@ export interface EmployeeTeamDetailOut extends EmployeeTeamOut {
   services: EmployeeServiceLinkOut[];
 }
 
+/** Payload de `PATCH /employees/team/{employee_id}/profile` (admin). */
+export interface EmployeeAdminUpdateInput {
+  username?: string;
+  first_name?: string;
+  last_name?: string;
+  gender?: Gender;
+  phone?: string;
+  birth_date?: string;
+  instagram?: string;
+  bio?: string;
+}
+
 export interface EmployeeServiceOut {
   id: string;
   service_id: string;
