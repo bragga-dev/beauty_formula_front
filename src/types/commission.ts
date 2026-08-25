@@ -104,6 +104,24 @@ export interface CommissionBulkStatusOut {
   commission_ids: string[];
 }
 
+/**
+ * Geração em lote: cria a comissão de todo atendimento concluído do
+ * período que ainda não tem comissão. Idempotente — rodar de novo pro
+ * mesmo período não duplica nada.
+ */
+export interface CommissionBulkGenerateInput {
+  employeeId?: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface CommissionBulkGenerateOut {
+  created: CommissionOut[];
+  created_count: number;
+  skipped_count: number;
+  total_completed_schedulings: number;
+}
+
 /** Marca como paga uma seleção manual e específica de comissões (checkbox na tabela). */
 export interface CommissionBulkMarkPaidInput {
   commissionIds: string[];

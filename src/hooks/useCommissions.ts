@@ -42,6 +42,20 @@ export function useCommissionTotals(
   });
 }
 
+/**
+ * Meses de competência que realmente têm comissão — pra popular o
+ * dropdown de filtro dinamicamente. `staleTime` alto porque essa lista
+ * só muda quando um atendimento novo é concluído em um mês inédito;
+ * não vale a pena refetch a cada foco de tela.
+ */
+export function useAvailableCompetencias(employeeId?: string) {
+  return useQuery({
+    queryKey: ["commissions", "available-competencias", employeeId],
+    queryFn: () => commissionService.getAvailableCompetencias(employeeId),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useCommissionMutations() {
   const queryClient = useQueryClient();
   const invalidate = () => {

@@ -27,12 +27,12 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useTeamMember } from "@/hooks/useTeam";
-import { useCommissions, useCommissionMutations, useCommissionTotals } from "@/hooks/useCommissions";
+import { useAvailableCompetencias, useCommissions, useCommissionMutations, useCommissionTotals } from "@/hooks/useCommissions";
 import { EditCommissionValueModal } from "@/features/team/EditCommissionValueModal";
 import { EditCommissionCompetenciaModal } from "@/features/team/EditCommissionCompetenciaModal";
 import { EmployeeMonthCalendar } from "@/features/team/EmployeeMonthCalendar";
 import { useToast } from "@/app/providers/toast-context";
-import { formatCurrencyBRL, formatDate, formatMonthYear, initials, monthInputToDate } from "@/utils/format";
+import { dateToMonthInput, formatCurrencyBRL, formatDate, formatMonthYear, initials, monthInputToDate } from "@/utils/format";
 import { ROUTES } from "@/constants/routes";
 import {
   COMMISSION_STATUS_BADGE,
@@ -67,6 +67,11 @@ export function DashboardEmployeeDetailPage() {
   } = useCommissions({ employeeId, status: statusFilter || undefined, startDate, endDate, competencia }, page, 10);
 
   const { data: totals } = useCommissionTotals({ employeeId, startDate, endDate, competencia });
+
+  // Meses que realmente têm comissão pra este funcionário — popula o
+  // MonthPicker dinamicamente em vez de um intervalo fixo de anos.
+  const { data: availableCompetenciasRaw } = useAvailableCompetencias(employeeId);
+  const availableCompetencias = (availableCompetenciasRaw ?? []).map(dateToMonthInput);
 
   const { updateValue, updateCompetencia, markAsPaid, markManyAsPaid, revertToPending, cancel } =
     useCommissionMutations();
@@ -413,6 +418,7 @@ export function DashboardEmployeeDetailPage() {
             }}
             allowEmpty
             hint="Mês em que o atendimento foi concluído"
+            availableMonths={availableCompetencias}
           />
           <Select
             label="Status"

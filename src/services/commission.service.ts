@@ -58,6 +58,19 @@ export const commissionService = {
       })
       .then((r) => r.data),
 
+  /**
+   * Meses de competência que realmente têm comissão (mais recente
+   * primeiro) — usado pra popular o filtro de mês de forma dinâmica,
+   * em vez de um intervalo fixo de anos. Cada item vem como "yyyy-mm-dd"
+   * (dia 1).
+   */
+  getAvailableCompetencias: (employeeId?: string) =>
+    api
+      .get<string[]>("/commissions/competencias", {
+        params: { employee_id: employeeId || undefined },
+      })
+      .then((r) => r.data),
+
   updateValue: (commissionId: string, payload: CommissionUpdateValueInput) =>
     api
       .patch<CommissionOut>(`/commissions/update-value/${commissionId}`, {
