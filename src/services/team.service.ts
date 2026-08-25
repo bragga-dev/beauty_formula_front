@@ -14,6 +14,10 @@ export const teamService = {
   detail: (employeeId: string) =>
     api.get<EmployeeTeamDetailOut>(`/employees/team/${employeeId}`).then((r) => r.data),
 
+  /** Admin: detalhe completo (inclui username, gênero, telefone, data de nascimento). */
+  detailAdmin: (employeeId: string) =>
+    api.get<EmployeeOut>(`/employees/team/${employeeId}/admin`).then((r) => r.data),
+
   /** Admin ajusta a janela de agendamento (dias à frente) de um funcionário. */
   updateBookingWindow: (employeeId: string, payload: EmployeeBookingWindowUpdateInput) =>
     api

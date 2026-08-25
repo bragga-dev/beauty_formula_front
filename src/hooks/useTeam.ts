@@ -18,6 +18,15 @@ export function useTeamMember(employeeId?: string) {
   });
 }
 
+/** Admin: detalhe completo do funcionário (username, gênero, telefone, nascimento). */
+export function useTeamMemberAdmin(employeeId?: string) {
+  return useQuery({
+    queryKey: ["team", "detail", "admin", employeeId],
+    queryFn: () => teamService.detailAdmin(employeeId as string),
+    enabled: !!employeeId,
+  });
+}
+
 /** Admin ajusta a janela de agendamento de um funcionário. Invalida o calendário (que exibe esse valor). */
 export function useUpdateBookingWindow() {
   const queryClient = useQueryClient();
@@ -38,6 +47,7 @@ export function useUpdateEmployeeProfile() {
       teamService.updateEmployeeProfile(employeeId, payload),
     onSuccess: (_data, { employeeId }) => {
       queryClient.invalidateQueries({ queryKey: ["team", "detail", employeeId] });
+      queryClient.invalidateQueries({ queryKey: ["team", "detail", "admin", employeeId] });
       queryClient.invalidateQueries({ queryKey: ["team"] });
     },
   });
@@ -51,6 +61,7 @@ export function useUpdateEmployeePhoto() {
       teamService.updateEmployeePhoto(employeeId, file),
     onSuccess: (_data, { employeeId }) => {
       queryClient.invalidateQueries({ queryKey: ["team", "detail", employeeId] });
+      queryClient.invalidateQueries({ queryKey: ["team", "detail", "admin", employeeId] });
       queryClient.invalidateQueries({ queryKey: ["team"] });
     },
   });

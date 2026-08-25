@@ -29,7 +29,7 @@ import { Pagination } from "@/components/tables/Pagination";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { useTeamMember } from "@/hooks/useTeam";
+import { useTeamMember, useTeamMemberAdmin } from "@/hooks/useTeam";
 import { useAvailableCompetencias, useCommissions, useCommissionMutations, useCommissionTotals } from "@/hooks/useCommissions";
 import { EditCommissionValueModal } from "@/features/team/EditCommissionValueModal";
 import { EditCommissionCompetenciaModal } from "@/features/team/EditCommissionCompetenciaModal";
@@ -72,6 +72,15 @@ export function DashboardEmployeeDetailPage() {
 
   const { data: employee, isLoading: isLoadingEmployee, isError: isEmployeeError, refetch: refetchEmployee } =
     useTeamMember(employeeId);
+
+  // Detalhe completo (username, gênero, telefone, nascimento) — só usado
+  // na aba "Editar Dados"; o resto da página usa o detalhe público acima.
+  const {
+    data: employeeAdmin,
+    isLoading: isLoadingEmployeeAdmin,
+    isError: isEmployeeAdminError,
+    refetch: refetchEmployeeAdmin,
+  } = useTeamMemberAdmin(employeeId);
 
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<CommissionStatus | "">("");
@@ -395,7 +404,13 @@ export function DashboardEmployeeDetailPage() {
       {/* Aba: Editar Dados */}
       {activeTab === "editar" && (
         <div className="mt-8">
-          <EditEmployeeForm employee={employee} />
+          {isLoadingEmployeeAdmin ? (
+            <Skeleton className="h-96 w-full" />
+          ) : isEmployeeAdminError || !employeeAdmin ? (
+            <ErrorState message="Não foi possível carregar os dados de edição." onRetry={() => refetchEmployeeAdmin()} />
+          ) : (
+            <EditEmployeeForm employee={employeeAdmin} />
+          )}
         </div>
       )}
 
