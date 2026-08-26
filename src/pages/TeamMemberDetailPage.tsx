@@ -141,7 +141,7 @@ export function TeamMemberDetailPage() {
       {/* Aba: Agenda */}
       {activeTab === "agenda" && employeeId && (
         <div className="mt-8">
-          <PublicEmployeeCalendar employeeId={employeeId} />
+          <PublicEmployeeCalendar employeeId={employeeId} services={employee.services} />
         </div>
       )}
 

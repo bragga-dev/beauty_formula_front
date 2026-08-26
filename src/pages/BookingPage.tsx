@@ -46,6 +46,19 @@ function nextDays(count: number): Date[] {
   });
 }
 
+// Valida o `?date=yyyy-mm-dd` vindo do deep-link da aba "Agenda" pública
+// (PublicEmployeeCalendar) — formato estrito e nunca no passado; qualquer
+// outra coisa é ignorada e o calendário cai no comportamento padrão
+// (seleciona o primeiro dia com vaga real).
+function isValidPreselectDate(value: string | null): value is string {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return parsed >= today;
+}
+
 function employeeName(employee: EmployeeTeamOut): string {
   return [employee.first_name, employee.last_name].filter(Boolean).join(" ") || "Profissional";
 }
@@ -84,6 +97,11 @@ export function BookingPage() {
 
   const preselectServiceId = searchParams.get("service");
   const preselectEmployeeId = searchParams.get("employee");
+  // Vem do clique num horário livre na aba "Agenda" do perfil público do
+  // funcionário (PublicEmployeeCalendar) — só um hint de qual dia abrir
+  // já selecionado; se não tiver vaga real nesse dia, o cliente escolhe
+  // outro normalmente pelo calendário.
+  const preselectDate = searchParams.get("date");
 
   const { data: servicesPage, isLoading: loadingServices, isError: servicesError, refetch: refetchServices } =
     usePublicServices(1, 50);
@@ -119,12 +137,12 @@ export function BookingPage() {
         setSelectedEmployee(found);
         setIsAnyProfessional(false);
         setEmployeeLocked(true);
-        setSelectedDate(null);
+        setSelectedDate(isValidPreselectDate(preselectDate) ? new Date(`${preselectDate}T00:00:00`) : null);
         setStep(3);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamPage, preselectEmployeeId, selectedService]);
+  }, [teamPage, preselectEmployeeId, preselectDate, selectedService]);
 
   const isCalendarStep = step === 3;
 

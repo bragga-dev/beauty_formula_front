@@ -1,16 +1,22 @@
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Clock, Ban, CalendarDays, CheckCircle2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Clock, Ban, CalendarDays, CheckCircle2, CalendarClock } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { usePublicEmployeeCalendar } from "@/hooks/useAvailability";
 import { cn } from "@/utils/cn";
+import { ROUTES } from "@/constants/routes";
 import type { PublicEmployeeCalendarDayOut } from "@/types/employeeCalendar";
+import type { EmployeeServiceLinkOut } from "@/types/employee";
 
 interface PublicEmployeeCalendarProps {
   employeeId: string;
+  /** Serviços que esse funcionário atende — habilita o CTA "Agendar" em cada dia livre. */
+  services: EmployeeServiceLinkOut[];
 }
 
 const WEEKDAY_HEADERS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
@@ -30,12 +36,16 @@ function timeLabel(value: string): string {
   return value.slice(0, 5);
 }
 
-export function PublicEmployeeCalendar({ employeeId }: PublicEmployeeCalendarProps) {
+export function PublicEmployeeCalendar({ employeeId, services }: PublicEmployeeCalendarProps) {
+  const navigate = useNavigate();
   const [cursor, setCursor] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  // Só importa quando o funcionário atende mais de um serviço — com um
+  // só, o "Agendar" usa ele direto, sem pedir escolha.
+  const [selectedServiceId, setSelectedServiceId] = useState<string>(() => services[0]?.service_id ?? "");
 
   const month = monthKey(cursor);
   const { data: calendar, isLoading, isError, refetch } = usePublicEmployeeCalendar(employeeId, month);
@@ -49,6 +59,11 @@ export function PublicEmployeeCalendar({ employeeId }: PublicEmployeeCalendarPro
   function goToMonth(offset: number) {
     setCursor((prev) => new Date(prev.getFullYear(), prev.getMonth() + offset, 1));
     setSelectedDate(null);
+  }
+
+  function handleBookThisDay() {
+    if (!selectedDate || !selectedServiceId) return;
+    navigate(`${ROUTES.booking}?service=${selectedServiceId}&employee=${employeeId}&date=${selectedDate}`);
   }
 
   return (
@@ -177,6 +192,36 @@ export function PublicEmployeeCalendar({ employeeId }: PublicEmployeeCalendarPro
                   </div>
                 ) : (
                   <p className="mt-2 text-sm text-bone-600">Nenhum horário livre neste dia.</p>
+                )}
+
+                {selectedDay.has_open_slots && selectedDay.is_within_booking_window && (
+                  <div className="mt-5 flex flex-col gap-3 border-t border-ink-700 pt-4 sm:flex-row sm:items-end sm:justify-between">
+                    {services.length === 0 ? (
+                      <p className="text-sm text-bone-600">
+                        Esse profissional ainda não tem serviços vinculados pra agendar.
+                      </p>
+                    ) : (
+                      <>
+                        {services.length > 1 && (
+                          <Select
+                            label="Serviço"
+                            className="sm:max-w-xs"
+                            value={selectedServiceId}
+                            onChange={(e) => setSelectedServiceId(e.target.value)}
+                          >
+                            {services.map((link) => (
+                              <option key={link.id} value={link.service_id}>
+                                {link.service.name}
+                              </option>
+                            ))}
+                          </Select>
+                        )}
+                        <Button type="button" variant="gold" onClick={handleBookThisDay}>
+                          <CalendarClock className="h-4 w-4" /> Agendar neste dia
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
             )}
