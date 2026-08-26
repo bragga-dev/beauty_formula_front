@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { CalendarClock, ShieldCheck, Sparkles, Users, ArrowRight, Scissors } from "lucide-react";
-import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Carousel } from "@/components/ui/Carousel";
 import { ServiceCard } from "@/features/services/ServiceCard";
 import { ServiceCardSkeleton } from "@/features/services/ServiceCardSkeleton";
@@ -53,14 +52,6 @@ export function HomePage() {
               Na Fórmula da Beleza, unimos técnica, estilo e atendimento de excelência para realçar o que
               você tem de melhor.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <ButtonLink to={ROUTES.booking} size="lg" variant="primary">
-                <CalendarClock className="h-4 w-4" /> Agendar Horário
-              </ButtonLink>
-              <ButtonLink to={ROUTES.services} size="lg" variant="outline">
-                Nossos Serviços
-              </ButtonLink>
-            </div>
             <div className="razor-line mt-10 max-w-xs" />
           </div>
         </div>

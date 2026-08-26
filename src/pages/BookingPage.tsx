@@ -32,10 +32,11 @@ import type { EmployeeTeamOut } from "@/types/employee";
 import type { SchedulingOut } from "@/types/scheduling.types";
 import type { ApiError } from "@/types/common";
 
-// Janela de dias mostrada no calendário — os 30 dias inteiros de uma vez
-// (mesmo teto de disponibilidade calculado no backend, MAX_DAYS_AHEAD =
-// 30). A faixa de dias rola horizontalmente em vez de carregar aos poucos.
-const DAYS_WINDOW = 30;
+// Janela de dias mostrada no calendário — usa o `booking_window_days` de
+// cada funcionário (o admin configura isso por funcionário). Esse valor
+// é só o fallback pra quando ainda não há funcionário nenhum selecionado
+// (Etapa 3 nem foi montada) — nunca reflete a janela real de ninguém.
+const DEFAULT_DAYS_WINDOW = 30;
 
 function nextDays(count: number): Date[] {
   return Array.from({ length: count }, (_, i) => {
@@ -125,7 +126,6 @@ export function BookingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teamPage, preselectEmployeeId, selectedService]);
 
-  const days = useMemo(() => nextDays(DAYS_WINDOW), []);
   const isCalendarStep = step === 3;
 
   // Profissional(is) considerados no calendário: um só (fixo/escolhido)
@@ -135,6 +135,19 @@ export function BookingPage() {
     if (isAnyProfessional) return eligibleEmployees ?? [];
     return [];
   }, [selectedEmployee, isAnyProfessional, eligibleEmployees]);
+
+  const days = useMemo(() => {
+    // "Qualquer profissional": usa a maior janela entre os elegíveis, pra
+    // não cortar cedo a agenda de quem tem mais dias configurados — dias
+    // além da janela de um funcionário específico simplesmente não
+    // retornam vaga pra ele (o backend rejeita só aquele par
+    // funcionário/dia), então isso não vaza disponibilidade indevida.
+    const windowDays =
+      calendarEmployees.length > 0
+        ? Math.max(...calendarEmployees.map((e) => e.booking_window_days))
+        : DEFAULT_DAYS_WINDOW;
+    return nextDays(windowDays);
+  }, [calendarEmployees]);
 
   const calendar = useCalendarAvailability(
     isCalendarStep ? calendarEmployees : [],
@@ -400,7 +413,7 @@ export function BookingPage() {
                   );
                 })}
               </div>
-              <p className="mb-3 text-[11px] text-bone-600">Arraste para o lado para ver os próximos 30 dias.</p>
+              <p className="mb-3 text-[11px] text-bone-600">Arraste para o lado para ver os próximos {days.length} dias.</p>
 
               <div className="mt-2 grid grid-cols-[repeat(auto-fill,minmax(4.75rem,1fr))] gap-2">
                 {calendar.isLoading &&

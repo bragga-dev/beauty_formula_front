@@ -60,11 +60,16 @@ export function AdminRescheduleModal({ open, scheduling, isSubmitting, onSubmit,
     refetch: refetchEligible,
   } = useEligibleEmployees(open ? serviceId : undefined);
 
-  const days = useMemo(() => nextDays(DAYS_WINDOW), [open]);
-
   const calendarEmployees = useMemo<EmployeeTeamOut[]>(
     () => (selectedEmployee ? [selectedEmployee] : []),
     [selectedEmployee],
+  );
+
+  // Usa a janela configurada pelo admin pra esse funcionário — mesmo
+  // motivo do reagendamento do cliente (RescheduleAppointmentModal).
+  const days = useMemo(
+    () => nextDays(selectedEmployee?.booking_window_days ?? DAYS_WINDOW),
+    [open, selectedEmployee],
   );
 
   const calendar = useCalendarAvailability(open ? calendarEmployees : [], serviceId, open ? days : []);

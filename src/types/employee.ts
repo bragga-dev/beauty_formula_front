@@ -29,6 +29,8 @@ export interface EmployeeTeamOut {
   photo_url?: string | null;
   bio?: string | null;
   instagram?: string | null;
+  /** Quantos dias à frente a agenda desse funcionário fica aberta pra agendar/reagendar. */
+  booking_window_days: number;
 }
 
 export interface EmployeeTeamDetailOut extends EmployeeTeamOut {
