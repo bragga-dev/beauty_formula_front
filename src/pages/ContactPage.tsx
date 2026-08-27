@@ -109,14 +109,14 @@ export function ContactPage() {
             <Phone className="h-5 w-5 shrink-0 text-gold-400" />
             <div>
               <p className="text-sm text-bone-100">Telefone / WhatsApp</p>
-              <p className="text-sm text-bone-500">(11) 99999-9999</p>
+              <p className="text-sm text-bone-500">(73) 99887-5268</p>
             </div>
           </div>
           <div className="flex items-start gap-3 rounded-card border border-ink-700 bg-ink-800/60 p-4">
             <Mail className="h-5 w-5 shrink-0 text-gold-400" />
             <div>
               <p className="text-sm text-bone-100">E-mail</p>
-              <p className="text-sm text-bone-500">contato@formuladabeleza.com.br</p>
+              <p className="text-sm text-bone-500">raphaela789@hotmail.com</p>
             </div>
           </div>
           <div className="flex items-start gap-3 rounded-card border border-ink-700 bg-ink-800/60 p-4">
@@ -151,7 +151,7 @@ export function ContactPage() {
             <FileText className="h-5 w-5 shrink-0 text-gold-400" />
             <div>
               <p className="text-sm text-bone-100">CNPJ</p>
-              <p className="text-sm text-bone-500">00.000.000/0001-00</p>
+              <p className="text-sm text-bone-500">27.766.761/0001-05</p>
             </div>
           </div>
         </div>

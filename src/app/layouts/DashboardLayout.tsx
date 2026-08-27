@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate, Link } from "react-router-dom";
 import {
   LayoutGrid,
   User,
@@ -18,12 +18,12 @@ import {
   X,
   LogOut,
 } from "lucide-react";
-import { Logo } from "@/components/ui/Logo";
 import { Avatar } from "@/components/ui/Avatar";
 import { useAuth } from "@/app/providers/auth-context";
 import { ROUTES } from "@/constants/routes";
 import { initials } from "@/utils/format";
 import { cn } from "@/utils/cn";
+import formula1Image from "@/assets/formula-1.jpg";
 
 interface NavItem {
   to: string;
@@ -78,9 +78,12 @@ export function DashboardLayout() {
 
   const NavContent = (
     <>
-      <div className="px-2">
-        <Logo />
-      </div>
+      <Link to={ROUTES.home} className="flex items-center gap-3 px-2">
+        <img src={formula1Image} alt="Fórmula da Beleza" className="h-10 w-auto object-contain" />
+        <span className="font-display text-lg font-bold text-bone-50">
+          Fórmula da Beleza
+        </span>
+      </Link>
       <nav className="mt-8 flex flex-1 flex-col gap-1">
         {items.map((item) => (
           <NavLink
@@ -126,7 +129,12 @@ export function DashboardLayout() {
 
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between border-b border-ink-700 bg-ink-900 px-4 py-3 lg:hidden">
-          <Logo />
+          <Link to={ROUTES.home} className="flex items-center gap-3">
+            <img src={formula1Image} alt="Fórmula da Beleza" className="h-8 w-auto object-contain" />
+            <span className="font-display text-base font-bold text-bone-50">
+              Fórmula da Beleza
+            </span>
+          </Link>
           <button onClick={() => setMobileOpen(true)} aria-label="Abrir menu">
             <Menu className="h-6 w-6 text-bone-100" />
           </button>

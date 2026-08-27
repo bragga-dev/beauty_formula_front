@@ -1,19 +1,23 @@
 import { Link } from "react-router-dom";
 import { MapPin, Phone, Clock } from "lucide-react";
-import { Logo } from "@/components/ui/Logo";
 import { PaymentBrands } from "@/components/ui/PaymentBrands";
 import { ROUTES } from "@/constants/routes";
+import formula1Image from "@/assets/formula-1.jpg";
 
 export function PublicFooter() {
   return (
     <footer className="border-t border-ink-700 bg-ink-900">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-4 lg:px-8">
         <div className="md:col-span-1">
-          <Logo />
+          <Link to={ROUTES.home} className="flex items-center gap-3">
+            <img src={formula1Image} alt="Fórmula da Beleza" className="h-10 w-auto object-contain" />
+            <span className="font-display text-lg font-bold text-bone-50">
+              Fórmula da Beleza
+            </span>
+          </Link>
           <p className="mt-4 text-sm text-bone-500">
-            Estilo, confiança e atitude em cada detalhe. Barbearia &amp; salão de beleza.
+            Estilo, confiança e atitude em cada detalhe.
           </p>
-         
         </div>
 
         <div>
@@ -36,7 +40,7 @@ export function PublicFooter() {
         <div>
           <h4 className="text-xs uppercase tracking-widest text-gold-400">Contato</h4>
           <ul className="mt-4 space-y-2 text-sm text-bone-400">
-            <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-bone-600" /> (11) 99999-9999</li>
+            <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-bone-600" /> (73) 99887-5268</li>
             <li className="flex items-center gap-2"><MapPin className="h-4 w-4 text-bone-600" /> Av. Franz Gedeon, Centro —  Praça da Bandeira</li>
           </ul>
         </div>
@@ -47,7 +51,7 @@ export function PublicFooter() {
         </div>
       </div>
       <div className="border-t border-ink-700 py-5 text-center text-xs text-bone-600">
-        © {new Date().getFullYear()} Fórmula da Beleza. Todos os direitos reservados. · CNPJ 00.000.000/0001-00
+        © {new Date().getFullYear()} Fórmula da Beleza. Todos os direitos reservados. · CNPJ 27.766.761/0001-05
       </div>
     </footer>
   );

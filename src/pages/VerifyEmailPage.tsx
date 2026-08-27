@@ -1,8 +1,8 @@
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { ButtonLink } from "@/components/ui/ButtonLink";
-import { Logo } from "@/components/ui/Logo";
 import { ROUTES } from "@/constants/routes";
+import formula1Image from "@/assets/formula-1.jpg";
 
 export function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
@@ -13,7 +13,12 @@ export function VerifyEmailPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 text-center">
-      <Logo />
+      <Link to={ROUTES.home} className="flex items-center gap-3">
+        <img src={formula1Image} alt="Fórmula da Beleza" className="h-12 w-auto object-contain" />
+        <span className="font-display text-xl font-bold text-bone-50">
+          Fórmula da Beleza
+        </span>
+      </Link>
       {success ? (
         <>
           <CheckCircle2 className="h-16 w-16 text-success-500" />

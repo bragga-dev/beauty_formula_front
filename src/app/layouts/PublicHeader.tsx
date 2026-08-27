@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate }from "react-router-dom";
 import { Menu, X, User, LogOut, LayoutDashboard, CalendarClock } from "lucide-react";
-import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { Dropdown, DropdownItem } from "@/components/ui/Dropdown";
@@ -9,6 +8,7 @@ import { ROUTES } from "@/constants/routes";
 import { useAuth } from "@/app/providers/auth-context";
 import { initials } from "@/utils/format";
 import { cn } from "@/utils/cn";
+import formula1Image from "@/assets/formula-1.jpg";
 
 const NAV_LINKS = [
   { to: ROUTES.home, label: "Início" },
@@ -36,7 +36,12 @@ export function PublicHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-ink-700 bg-ink-950/90 backdrop-blur">
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <Logo />
+        <NavLink to={ROUTES.home} className="flex items-center gap-3">
+          <img src={formula1Image} alt="Fórmula da Beleza" className="h-12 w-auto object-contain" />
+          <span className="font-display text-xl font-bold text-bone-50">
+            Fórmula da Beleza
+          </span>
+        </NavLink>
 
         <nav className="hidden items-center gap-8 lg:flex">
           {NAV_LINKS.map((link) => (
