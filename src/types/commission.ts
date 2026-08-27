@@ -105,16 +105,11 @@ export interface CommissionBulkStatusOut {
 }
 
 /**
- * Geração em lote: cria a comissão de todo atendimento concluído do
- * período que ainda não tem comissão. Idempotente — rodar de novo pro
- * mesmo período não duplica nada.
+ * Resultado de uma geração/sincronização em lote: cria a comissão de
+ * todo atendimento concluído (do período, ou de todo o histórico,
+ * dependendo do endpoint) que ainda não tem comissão. Idempotente —
+ * rodar de novo não duplica nada.
  */
-export interface CommissionBulkGenerateInput {
-  employeeId?: string;
-  startDate: string;
-  endDate: string;
-}
-
 export interface CommissionBulkGenerateOut {
   created: CommissionOut[];
   created_count: number;

@@ -99,6 +99,11 @@ export function useCommissionMutations() {
     onSuccess: invalidate,
   });
 
+  const syncMissing = useMutation({
+    mutationFn: (employeeId?: string) => commissionService.syncMissing(employeeId),
+    onSuccess: invalidate,
+  });
+
   return {
     updateValue,
     updateCompetencia,
@@ -107,6 +112,7 @@ export function useCommissionMutations() {
     revertToPending,
     cancel,
     updateStatusForPeriod,
+    syncMissing,
   };
 }
 

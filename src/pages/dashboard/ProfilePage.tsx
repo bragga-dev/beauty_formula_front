@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Camera, KeyRound, Save } from "lucide-react";
+import { Camera, Download, KeyRound, Laptop, LogOut, Save, Trash2 } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -9,16 +9,26 @@ import { Avatar } from "@/components/ui/Avatar";
 import { useAuth } from "@/app/providers/auth-context";
 import { useToast } from "@/app/providers/toast-context";
 import { profileService } from "@/services/profile.service";
+import { authService } from "@/services/auth.service";
 import { initials } from "@/utils/format";
 import { ChangePasswordModal } from "@/features/profile/ChangePasswordModal";
+import { SessionsModal } from "@/features/profile/SessionsModal";
+import { DeleteAccountModal } from "@/features/profile/DeleteAccountModal";
+import { ROUTES } from "@/constants/routes";
+import { useNavigate } from "react-router-dom";
 import type { ApiError } from "@/types/common";
 import type { Gender } from "@/types/user";
 
 export function ProfilePage() {
-  const { me, updateProfile } = useAuth();
+  const { me, updateProfile, logout } = useAuth();
   const { push } = useToast();
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [isSessionsOpen, setIsSessionsOpen] = useState(false);
+  const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isLoggingOutAll, setIsLoggingOutAll] = useState(false);
 
   const isEmployee = me?.user.role === "employee";
   // Admin não tem perfil de cliente nem de funcionário — não existe
@@ -102,6 +112,45 @@ export function ProfilePage() {
       setIsUploadingPhoto(false);
       e.target.value = "";
     }
+  }
+
+  async function handleExportData() {
+    setIsExporting(true);
+    try {
+      const data = await authService.exportMyData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "meus-dados-formula-da-beleza.json";
+      a.click();
+      URL.revokeObjectURL(url);
+      push("Seus dados foram baixados.", "success");
+    } catch (err) {
+      push((err as ApiError).detail as string, "error");
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
+  async function handleLogoutAll() {
+    setIsLoggingOutAll(true);
+    try {
+      await authService.logoutAll();
+      push("Sessões encerradas em todos os dispositivos.", "success");
+      await logout();
+      navigate(ROUTES.login);
+    } catch (err) {
+      push((err as ApiError).detail as string, "error");
+      setIsLoggingOutAll(false);
+    }
+  }
+
+  async function handleAccountDeleted() {
+    setIsDeleteAccountOpen(false);
+    push("Conta excluída. Sentiremos sua falta!", "success");
+    await logout();
+    navigate(ROUTES.login);
   }
 
   return (
@@ -213,18 +262,75 @@ export function ProfilePage() {
         <CardHeader>
           <h2 className="font-display text-sm uppercase tracking-wide text-bone-50">Segurança</h2>
         </CardHeader>
-        <CardBody className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-sm text-bone-100">Senha de acesso</p>
-            <p className="text-xs text-bone-500">Altere sua senha periodicamente para manter sua conta segura.</p>
+        <CardBody className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-bone-100">Senha de acesso</p>
+              <p className="text-xs text-bone-500">Altere sua senha periodicamente para manter sua conta segura.</p>
+            </div>
+            <Button type="button" variant="secondary" onClick={() => setIsChangePasswordOpen(true)}>
+              <KeyRound className="h-4 w-4" /> Alterar senha
+            </Button>
           </div>
-          <Button type="button" variant="secondary" onClick={() => setIsChangePasswordOpen(true)}>
-            <KeyRound className="h-4 w-4" /> Alterar senha
-          </Button>
+
+          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-ink-700 pt-4">
+            <div>
+              <p className="text-sm text-bone-100">Sessões ativas</p>
+              <p className="text-xs text-bone-500">Veja os dispositivos logados na sua conta e revogue o acesso.</p>
+            </div>
+            <Button type="button" variant="secondary" onClick={() => setIsSessionsOpen(true)}>
+              <Laptop className="h-4 w-4" /> Ver sessões
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-ink-700 pt-4">
+            <div>
+              <p className="text-sm text-bone-100">Sair de todos os dispositivos</p>
+              <p className="text-xs text-bone-500">Encerra sua sessão aqui e em qualquer outro dispositivo logado.</p>
+            </div>
+            <Button type="button" variant="secondary" isLoading={isLoggingOutAll} onClick={handleLogoutAll}>
+              <LogOut className="h-4 w-4" /> Sair de tudo
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <h2 className="font-display text-sm uppercase tracking-wide text-bone-50">Meus dados (LGPD)</h2>
+        </CardHeader>
+        <CardBody className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-bone-100">Exportar meus dados</p>
+              <p className="text-xs text-bone-500">Baixe uma cópia dos seus dados pessoais em formato JSON.</p>
+            </div>
+            <Button type="button" variant="secondary" isLoading={isExporting} onClick={handleExportData}>
+              <Download className="h-4 w-4" /> Exportar dados
+            </Button>
+          </div>
+
+          {!isAdmin && (
+            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-ink-700 pt-4">
+              <div>
+                <p className="text-sm text-bone-100">Excluir minha conta</p>
+                <p className="text-xs text-bone-500">Apaga seus dados pessoais permanentemente. Ação irreversível.</p>
+              </div>
+              <Button type="button" variant="danger" onClick={() => setIsDeleteAccountOpen(true)}>
+                <Trash2 className="h-4 w-4" /> Excluir conta
+              </Button>
+            </div>
+          )}
         </CardBody>
       </Card>
 
       <ChangePasswordModal open={isChangePasswordOpen} onClose={() => setIsChangePasswordOpen(false)} />
+      <SessionsModal open={isSessionsOpen} onClose={() => setIsSessionsOpen(false)} />
+      <DeleteAccountModal
+        open={isDeleteAccountOpen}
+        onClose={() => setIsDeleteAccountOpen(false)}
+        onConfirmed={handleAccountDeleted}
+      />
     </div>
   );
 }

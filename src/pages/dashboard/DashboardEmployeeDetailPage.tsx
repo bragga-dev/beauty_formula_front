@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Pencil,
   RotateCcw,
+  RefreshCw,
   UserCog,
   Wallet,
 } from "lucide-react";
@@ -105,7 +106,7 @@ export function DashboardEmployeeDetailPage() {
   const { data: availableCompetenciasRaw } = useAvailableCompetencias(employeeId);
   const availableCompetencias = (availableCompetenciasRaw ?? []).map(dateToMonthInput);
 
-  const { updateValue, updateCompetencia, markAsPaid, markManyAsPaid, revertToPending, cancel } =
+  const { updateValue, updateCompetencia, markAsPaid, markManyAsPaid, revertToPending, cancel, syncMissing } =
     useCommissionMutations();
 
   const [editingCommission, setEditingCommission] = useState<CommissionOut | null>(null);
@@ -190,6 +191,20 @@ export function DashboardEmployeeDetailPage() {
       await revertToPending.mutateAsync(revertingCommission.id);
       push("Comissão revertida para pendente.", "success");
       setRevertingCommission(null);
+    } catch (err) {
+      push((err as ApiError).detail as string, "error");
+    }
+  }
+
+  async function handleSyncCommissions() {
+    if (!employeeId) return;
+    try {
+      const result = await syncMissing.mutateAsync(employeeId);
+      if (result.created_count === 0) {
+        push("Nenhuma comissão pendente de geração — tudo em dia.", "info");
+      } else {
+        push(`${result.created_count} comissão(ões) gerada(s) retroativamente.`, "success");
+      }
     } catch (err) {
       push((err as ApiError).detail as string, "error");
     }
@@ -422,10 +437,14 @@ export function DashboardEmployeeDetailPage() {
             <Wallet className="h-5 w-5 text-gold-400" />
             <h2 className="text-xl">Comissões</h2>
           </div>
+          <Button variant="secondary" size="sm" onClick={handleSyncCommissions} isLoading={syncMissing.isPending}>
+            <RefreshCw className="mr-1.5 h-4 w-4" /> Atualizar comissões
+          </Button>
         </div>
         <p className="mt-1 text-xs text-bone-600">
           Gerada automaticamente, com status pendente, assim que o atendimento correspondente é marcado como
-          concluído. Não existe geração manual.
+          concluído. "Atualizar comissões" só verifica se algum atendimento concluído deste funcionário ficou sem
+          comissão (por falha pontual ou dado legado) e gera o que faltar — não recria o que já existe.
         </p>
 
         {totals && (

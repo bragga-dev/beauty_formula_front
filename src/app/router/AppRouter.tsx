@@ -86,6 +86,9 @@ const DashboardMySchedulePage = lazy(() =>
 const DashboardMyTimeOffPage = lazy(() =>
   import("@/pages/dashboard/DashboardMyTimeOffPage").then((m) => ({ default: m.DashboardMyTimeOffPage })),
 );
+const DashboardMyCommissionsPage = lazy(() =>
+  import("@/pages/dashboard/DashboardMyCommissionsPage").then((m) => ({ default: m.DashboardMyCommissionsPage })),
+);
 const DashboardMyAppointmentsPage = lazy(() =>
   import("@/pages/dashboard/DashboardMyAppointmentsPage").then((m) => ({ default: m.DashboardMyAppointmentsPage })),
 );
@@ -170,6 +173,7 @@ export function AppRouter() {
               <Route path={ROUTES.dashboardMyServices} element={<DashboardMyServicesPage />} />
               <Route path={ROUTES.dashboardMySchedule} element={<DashboardMySchedulePage />} />
               <Route path={ROUTES.dashboardMyTimeOff} element={<DashboardMyTimeOffPage />} />
+              <Route path={ROUTES.dashboardMyCommissions} element={<DashboardMyCommissionsPage />} />
               <Route path={ROUTES.dashboardMyClientAppointments} element={<DashboardMyClientAppointmentsPage />} />
               <Route
                 path="/painel/meus-atendimentos/:appointmentId"

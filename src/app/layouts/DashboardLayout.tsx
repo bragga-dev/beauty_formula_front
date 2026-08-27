@@ -13,6 +13,7 @@ import {
   Package,
   MailQuestion,
   CreditCard,
+  Wallet,
   Menu,
   X,
   LogOut,
@@ -57,6 +58,7 @@ export function DashboardLayout() {
       { to: ROUTES.dashboardMyClientAppointments, label: "Meus Atendimentos", icon: CalendarCheck },
       { to: ROUTES.dashboardMySchedule, label: "Minha Agenda", icon: CalendarClock },
       { to: ROUTES.dashboardMyTimeOff, label: "Meus Bloqueios", icon: CalendarOff },
+      { to: ROUTES.dashboardMyCommissions, label: "Minhas Comissões", icon: Wallet },
       { to: ROUTES.dashboardRatings, label: "Avaliações", icon: Star },
     );
   }
@@ -71,7 +73,7 @@ export function DashboardLayout() {
 
   async function handleLogout() {
     await logout();
-    navigate(ROUTES.home);
+    navigate(ROUTES.login);
   }
 
   const NavContent = (

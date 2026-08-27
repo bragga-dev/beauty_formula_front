@@ -57,4 +57,7 @@ export const authService = {
 
   deleteAccount: (password: string) =>
     api.delete<MessageOut>("/auth/delete-account", { data: { password } }).then((r) => r.data),
+
+  /** LGPD — portabilidade: retorna os dados pessoais do usuário logado em JSON estruturado. */
+  exportMyData: () => api.get<Record<string, unknown>>("/auth/export-my-data").then((r) => r.data),
 };

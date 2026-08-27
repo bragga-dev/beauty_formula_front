@@ -1,6 +1,7 @@
 import { api } from "./api";
 import type { PageOut } from "@/types/common";
 import type {
+  CommissionBulkGenerateOut,
   CommissionBulkMarkPaidInput,
   CommissionBulkMarkPaidOut,
   CommissionBulkStatusInput,
@@ -17,12 +18,19 @@ import type {
  * montado em `/commissions/`). Ver
  * `beauty_formula/apps/payment/api/employee_commission.py`.
  *
- * Não existe criação manual aqui: toda comissão nasce sozinha, no
- * backend, no momento em que o atendimento correspondente é concluído
- * (`generate_commission_for_completed_scheduling`). O front só lê e
- * gerencia o que já foi gerado.
+ * A geração é automática por padrão (dispara sozinha no backend quando
+ * um atendimento é concluído). `syncMissing` existe só como correção:
+ * varre TODO o histórico (sem recorte de período) atrás de atendimento
+ * COMPLETED sem comissão e gera. Idempotente — atendimento que já tem
+ * comissão nem entra na varredura.
  */
 export const commissionService = {
+  /** Admin corrige o que porventura escapou da geração automática — sem filtro de data. */
+  syncMissing: (employeeId?: string) =>
+    api
+      .post<CommissionBulkGenerateOut>("/commissions/sync", null, { params: employeeId ? { employee_id: employeeId } : {} })
+      .then((r) => r.data),
+
   // ═══════════════════════════════════════════════════════════════
   // Admin — listagem / detalhe / edição pontual
   // ═══════════════════════════════════════════════════════════════

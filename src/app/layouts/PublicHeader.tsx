@@ -30,7 +30,7 @@ export function PublicHeader() {
 
   async function handleLogout() {
     await logout();
-    navigate(ROUTES.home);
+    navigate(ROUTES.login);
   }
 
   return (

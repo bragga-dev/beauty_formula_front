@@ -75,12 +75,7 @@ export function useSchedulingMutations() {
     onSuccess: invalidate,
   });
 
-  const confirm = useMutation({
-    mutationFn: (id: string) => schedulingService.confirmMine(id),
-    onSuccess: invalidate,
-  });
-
-  return { create, cancel, reschedule, confirm };
+  return { create, cancel, reschedule };
 }
 
 // ═══════════════════════════════════════════════════════════════════
