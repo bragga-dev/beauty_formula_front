@@ -51,7 +51,7 @@ export function PublicHeader() {
               end={link.to === ROUTES.home}
               className={({ isActive }) =>
                 cn(
-                  "font-display text-xs uppercase tracking-widest text-bone-300 transition-colors hover:text-gold-400",
+                  "font-display text-sm font-semibold uppercase tracking-widest text-bone-50 transition-colors hover:text-gold-400",
                   isActive && "text-crimson-400",
                 )
               }
@@ -115,7 +115,7 @@ export function PublicHeader() {
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
                   cn(
-                    "rounded-card px-3 py-3 font-display text-sm uppercase tracking-wide text-bone-300",
+                    "rounded-card px-3 py-3 font-display text-base font-semibold uppercase tracking-wide text-bone-50",
                     isActive && "bg-ink-800 text-crimson-400",
                   )
                 }
