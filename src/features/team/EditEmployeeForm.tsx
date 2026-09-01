@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
+import { ImageCropModal } from "@/components/media/ImageCropModal";
 import { initials } from "@/utils/format";
 import { useUpdateEmployeeProfile, useUpdateEmployeePhoto } from "@/hooks/useTeam";
 import { useToast } from "@/app/providers/toast-context";
@@ -30,6 +31,7 @@ const MAX_PHOTO_SIZE_MB = 5;
 export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   const { push } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
 
   const employeeName = [employee.first_name, employee.last_name].filter(Boolean).join(" ") || "Sem nome";
 
@@ -49,26 +51,28 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
 
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
 
     if (!["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
       push("Formato inválido. Use JPG ou PNG.", "error");
-      e.target.value = "";
       return;
     }
     if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) {
       push(`Imagem muito grande. Máx: ${MAX_PHOTO_SIZE_MB}MB.`, "error");
-      e.target.value = "";
       return;
     }
 
+    setCropFile(file);
+  }
+
+  async function handleCropConfirm(croppedFile: File) {
     try {
-      await updatePhoto.mutateAsync({ employeeId: employee.id, file });
+      await updatePhoto.mutateAsync({ employeeId: employee.id, file: croppedFile });
       push("Foto atualizada!", "success");
+      setCropFile(null);
     } catch (err) {
       push((err as ApiError).detail as string, "error");
-    } finally {
-      e.target.value = "";
     }
   }
 
@@ -96,6 +100,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   }
 
   return (
+    <>
     <Card>
       <CardHeader className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
         <div className="relative">
@@ -196,5 +201,13 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
         </form>
       </CardBody>
     </Card>
+    <ImageCropModal
+      open={!!cropFile}
+      file={cropFile}
+      onClose={() => setCropFile(null)}
+      onConfirm={handleCropConfirm}
+      isSaving={updatePhoto.isPending}
+    />
+    </>
   );
 }

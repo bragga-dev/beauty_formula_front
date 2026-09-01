@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
+import { ImageCropModal } from "@/components/media/ImageCropModal";
 import { useAuth } from "@/app/providers/auth-context";
 import { useToast } from "@/app/providers/toast-context";
 import { profileService } from "@/services/profile.service";
@@ -50,6 +51,7 @@ export function ProfilePage() {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (!profile) return;
@@ -93,24 +95,29 @@ export function ProfilePage() {
     }
   }
 
-  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
+    setCropFile(file);
+  }
+
+  async function handleCropConfirm(croppedFile: File) {
     setIsUploadingPhoto(true);
     try {
       if (isEmployee) {
-        const updated = await profileService.uploadEmployeePhoto(file);
+        const updated = await profileService.uploadEmployeePhoto(croppedFile);
         updateProfile(updated);
       } else {
-        const updated = await profileService.uploadClientPhoto(file);
+        const updated = await profileService.uploadClientPhoto(croppedFile);
         updateProfile(updated);
       }
       push("Foto atualizada!", "success");
+      setCropFile(null);
     } catch (err) {
       push((err as ApiError).detail as string, "error");
     } finally {
       setIsUploadingPhoto(false);
-      e.target.value = "";
     }
   }
 
@@ -330,6 +337,13 @@ export function ProfilePage() {
         open={isDeleteAccountOpen}
         onClose={() => setIsDeleteAccountOpen(false)}
         onConfirmed={handleAccountDeleted}
+      />
+      <ImageCropModal
+        open={!!cropFile}
+        file={cropFile}
+        onClose={() => setCropFile(null)}
+        onConfirm={handleCropConfirm}
+        isSaving={isUploadingPhoto}
       />
     </div>
   );
