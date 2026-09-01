@@ -20,6 +20,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
+import { SkipLink } from "@/components/ui/SkipLink";
 import { useAuth } from "@/app/providers/auth-context";
 import { ROUTES } from "@/constants/routes";
 import { initials } from "@/utils/format";
@@ -125,6 +126,7 @@ export function DashboardLayout() {
 
   return (
     <div className="flex min-h-screen bg-ink-950">
+      <SkipLink />
       <aside className="hidden w-64 shrink-0 flex-col border-r border-ink-700 bg-ink-900 p-4 lg:flex">
         {NavContent}
       </aside>
@@ -158,7 +160,7 @@ export function DashboardLayout() {
           </div>
         )}
 
-        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+        <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 p-4 focus:outline-none sm:p-6 lg:p-8">
           <div className="mx-auto w-full min-w-0 max-w-7xl">
             <Outlet />
           </div>
