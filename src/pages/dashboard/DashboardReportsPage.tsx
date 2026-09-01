@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
-import { FileBarChart2, Download, Wallet, CalendarCheck, TrendingUp, Users } from "lucide-react";
+import { FileBarChart2, Download, Wallet, CalendarCheck, TrendingUp, Users, PieChart as PieChartIcon } from "lucide-react";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { MobileRowCard } from "@/components/tables/MobileRowCard";
+import { PieChart } from "@/components/charts/PieChart";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { useMonthlyBalance, useReportHistory, useDownloadMonthlyBalancePdf } from "@/hooks/useReports";
@@ -188,6 +189,37 @@ export function DashboardReportsPage() {
                     </div>
                   ))}
                 </div>
+              )}
+            </CardBody>
+          </Card>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <h2 className="text-lg text-bone-50">Atendimentos por serviço</h2>
+            </CardHeader>
+            <CardBody>
+              {isLoading ? (
+                <div className="flex justify-center">
+                  <Skeleton className="h-[200px] w-[200px] rounded-full" />
+                </div>
+              ) : (balance?.service_breakdown.length ?? 0) === 0 ? (
+                <EmptyState
+                  icon={PieChartIcon}
+                  title="Nenhum atendimento concluído no período"
+                  description="O gráfico aparece assim que houver atendimentos concluídos no mês."
+                />
+              ) : (
+                <PieChart
+                  data={
+                    balance?.service_breakdown.map((s) => ({
+                      label: s.service_name,
+                      value: s.completed_appointments,
+                      percentage: Number(s.percentage),
+                    })) ?? []
+                  }
+                  centerLabel="Concluídos"
+                  centerValue={balance?.total_appointments ?? 0}
+                />
               )}
             </CardBody>
           </Card>

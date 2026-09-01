@@ -18,6 +18,14 @@ export interface EmployeeBalanceOut {
   commission_pending: string;
 }
 
+/** Quantidade de atendimentos concluídos por serviço no mês, com o percentual sobre o total. */
+export interface ServiceBalanceOut {
+  service_id: string;
+  service_name: string;
+  completed_appointments: number;
+  percentage: string;
+}
+
 /** Balanço geral de um mês (empresa toda) + o detalhamento por funcionário. */
 export interface MonthlyBalanceOut {
   id: string;
@@ -31,6 +39,7 @@ export interface MonthlyBalanceOut {
   total_commissions_pending: string;
   net_profit: string;
   employee_breakdown: EmployeeBalanceOut[];
+  service_breakdown: ServiceBalanceOut[];
   generated_at: string;
   generated_by_name?: string | null;
 }
