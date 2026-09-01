@@ -18,6 +18,13 @@ interface PieChartProps {
  * Paleta cíclica alinhada ao design system (ink/bone/crimson/gold/...
  * definidos em `index.css`). Repete se houver mais fatias que cores.
  */
+/**
+ * Paleta cíclica: começa nas cores já definidas em `index.css` (design
+ * system do projeto) e complementa com tons extras (teal, rosa) pra
+ * suportar até 10 fatias sem repetir uma cor perto de outra parecida —
+ * relatórios com bastante serviços cadastrados (ex.: salão com 8-9
+ * serviços ativos) precisam de tons bem distinguíveis lado a lado.
+ */
 const SLICE_COLORS = [
   "var(--color-gold-400)",
   "var(--color-crimson-500)",
@@ -25,7 +32,9 @@ const SLICE_COLORS = [
   "var(--color-purple-400)",
   "var(--color-orange-500)",
   "var(--color-success-500)",
-  "var(--color-crimson-700)",
+  "#14b8a6", // teal
+  "#ec4899", // rosa
+  "var(--color-crimson-400)",
   "var(--color-gold-600)",
 ];
 

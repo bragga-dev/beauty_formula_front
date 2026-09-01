@@ -1,9 +1,25 @@
 import { useMemo, useState } from "react";
-import { FileBarChart2, Download, Wallet, CalendarCheck, TrendingUp, Users, PieChart as PieChartIcon } from "lucide-react";
+import {
+  FileBarChart2,
+  Download,
+  Wallet,
+  CalendarCheck,
+  TrendingUp,
+  Users,
+  PieChart as PieChartIcon,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Calendar,
+  RefreshCw,
+  UserX,
+  type LucideIcon,
+} from "lucide-react";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { Avatar } from "@/components/ui/Avatar";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { MobileRowCard } from "@/components/tables/MobileRowCard";
 import { PieChart } from "@/components/charts/PieChart";
@@ -15,6 +31,32 @@ import { formatCurrencyBRL } from "@/utils/format";
 import { SCHEDULING_STATUS_LABELS, type SchedulingStatus } from "@/types/scheduling.types";
 import { MONTH_LABELS, type EmployeeBalanceOut } from "@/types/report";
 import type { ApiError } from "@/types/common";
+
+/** Ícone + cor por status, igual ao badge usado no resto do painel (`SCHEDULING_STATUS_BADGE`). */
+const STATUS_ICON: Record<SchedulingStatus, LucideIcon> = {
+  created: Clock,
+  confirmed: Calendar,
+  completed: CheckCircle2,
+  canceled: XCircle,
+  no_show: UserX,
+  rescheduled: RefreshCw,
+};
+
+const STATUS_ICON_STYLES: Record<SchedulingStatus, string> = {
+  created: "bg-gold-400/15 text-gold-400",
+  confirmed: "bg-info-500/15 text-info-500",
+  completed: "bg-success-500/15 text-success-500",
+  canceled: "bg-danger-500/15 text-danger-500",
+  no_show: "bg-purple-500/20 text-purple-400",
+  rescheduled: "bg-orange-500/15 text-orange-500",
+};
+
+function initialsFromFullName(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
+  return (first + last).toUpperCase() || "?";
+}
 
 function StatCard({
   icon: Icon,
@@ -72,7 +114,20 @@ export function DashboardReportsPage() {
   }
 
   const employeeColumns: Column<EmployeeBalanceOut>[] = [
-    { header: "Funcionário", cell: (e) => <span className="font-medium text-bone-50">{e.employee_name}</span> },
+    {
+      header: "Funcionário",
+      cell: (e) => (
+        <div className="flex items-center gap-3">
+          <Avatar
+            src={e.employee_photo_url}
+            alt={e.employee_name}
+            fallback={initialsFromFullName(e.employee_name)}
+            size="sm"
+          />
+          <span className="font-medium text-bone-50">{e.employee_name}</span>
+        </div>
+      ),
+    },
     { header: "Atendimentos", cell: (e) => e.completed_appointments },
     { header: "Faturamento", cell: (e) => <span className="text-gold-400">{formatCurrencyBRL(e.revenue)}</span> },
     { header: "Comissão total", cell: (e) => formatCurrencyBRL(e.commission_total), hideOnMobile: true },
@@ -83,6 +138,14 @@ export function DashboardReportsPage() {
   function renderEmployeeCard(e: EmployeeBalanceOut) {
     return (
       <MobileRowCard
+        media={
+          <Avatar
+            src={e.employee_photo_url}
+            alt={e.employee_name}
+            fallback={initialsFromFullName(e.employee_name)}
+            size="sm"
+          />
+        }
         title={e.employee_name}
         meta={[
           { label: "Atendimentos", value: e.completed_appointments },
@@ -180,14 +243,27 @@ export function DashboardReportsPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {Object.entries(balance?.appointments_by_status ?? {}).map(([status, count]) => (
-                    <div key={status} className="rounded-card border border-ink-700 p-3">
-                      <p className="text-2xl text-bone-50">{count}</p>
-                      <p className="mt-0.5 text-xs text-bone-500">
-                        {SCHEDULING_STATUS_LABELS[status as SchedulingStatus] ?? status}
-                      </p>
-                    </div>
-                  ))}
+                  {Object.entries(balance?.appointments_by_status ?? {}).map(([status, count]) => {
+                    const Icon = STATUS_ICON[status as SchedulingStatus] ?? CalendarCheck;
+                    return (
+                      <div
+                        key={status}
+                        className="flex items-center justify-between gap-3 rounded-card border border-ink-700 p-3"
+                      >
+                        <div>
+                          <p className="text-2xl text-bone-50">{count}</p>
+                          <p className="mt-0.5 text-xs text-bone-500">
+                            {SCHEDULING_STATUS_LABELS[status as SchedulingStatus] ?? status}
+                          </p>
+                        </div>
+                        <span
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${STATUS_ICON_STYLES[status as SchedulingStatus] ?? "bg-ink-700 text-bone-300"}`}
+                        >
+                          <Icon className="h-5 w-5" />
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </CardBody>

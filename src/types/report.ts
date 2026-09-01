@@ -11,6 +11,7 @@
 export interface EmployeeBalanceOut {
   employee_id: string;
   employee_name: string;
+  employee_photo_url?: string | null;
   completed_appointments: number;
   revenue: string;
   commission_total: string;
