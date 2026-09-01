@@ -10,6 +10,7 @@ import {
   UserCog,
   Star,
   ArrowRight,
+  FileBarChart2,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { ButtonLink } from "@/components/ui/ButtonLink";
@@ -25,6 +26,8 @@ import { productsService } from "@/services/products.service";
 import { contactService } from "@/services/contact.service";
 import { adminUsersService } from "@/services/admin-users.service";
 import { ratingsService } from "@/services/ratings.service";
+import { reportService } from "@/services/report.service";
+import { formatCurrencyBRL } from "@/utils/format";
 import { ROUTES } from "@/constants/routes";
 
 function StatCard({
@@ -99,6 +102,11 @@ export function DashboardOverviewPage() {
     queryFn: () => ratingsService.listForModeration({}, 1, 1),
     enabled: role === "admin",
   });
+  const adminMonthlyBalance = useQuery({
+    queryKey: ["dashboard", "admin-monthly-balance"],
+    queryFn: () => reportService.getMonthlyBalance(),
+    enabled: role === "admin",
+  });
 
   const myServices = useQuery({
     queryKey: ["dashboard", "my-services"],
@@ -152,6 +160,13 @@ export function DashboardOverviewPage() {
           <StatCard icon={UserCog} label="Usuários cadastrados" value={adminUsers.data?.total ?? 0} isLoading={adminUsers.isLoading} to={ROUTES.dashboardUsers} />
           <StatCard icon={Users} label="Profissionais na equipe" value={adminTeam.data?.total ?? 0} isLoading={adminTeam.isLoading} to={ROUTES.dashboardTeam} />
           <StatCard icon={Star} label="Avaliações" value={adminRatings.data?.total ?? 0} isLoading={adminRatings.isLoading} to={ROUTES.dashboardRatings} />
+          <StatCard
+            icon={FileBarChart2}
+            label="Lucro líquido no mês"
+            value={formatCurrencyBRL(adminMonthlyBalance.data?.net_profit ?? "0")}
+            isLoading={adminMonthlyBalance.isLoading}
+            to={ROUTES.dashboardReports}
+          />
         </div>
       )}
 

@@ -14,6 +14,7 @@ import {
   MailQuestion,
   CreditCard,
   Wallet,
+  FileBarChart2,
   Menu,
   X,
   LogOut,
@@ -49,6 +50,7 @@ export function DashboardLayout() {
       { to: ROUTES.dashboardTeam, label: "Equipe", icon: Users },
       { to: ROUTES.dashboardRatings, label: "Avaliações", icon: Star },
       { to: ROUTES.dashboardPayments, label: "Pagamentos", icon: CreditCard },
+      { to: ROUTES.dashboardReports, label: "Relatórios", icon: FileBarChart2 },
     );
   }
 

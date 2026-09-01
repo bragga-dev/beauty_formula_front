@@ -40,7 +40,7 @@ export function HomePage() {
         <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-32 lg:px-8">
           <div className="max-w-xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/30 bg-gold-400/5 px-4 py-1.5 text-xs uppercase tracking-widest text-gold-400">
-              <Scissors className="h-3.5 w-3.5" /> Barbearia &amp; Salão
+              <Scissors className="h-3.5 w-3.5" />  Salão de Beleza
             </span>
             <h1 className="mt-6 text-5xl leading-[1.05] sm:text-6xl">
               Estilo que impõe.
