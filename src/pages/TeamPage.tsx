@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Users } from "lucide-react";
 import { EmployeeCard } from "@/features/team/EmployeeCard";
-import { EmployeeCardSkeleton } from "@/features/team/EmployeeCardSkeleton";
+import { CardSkeleton } from "@/components/ui/CardSkeleton";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { Pagination } from "@/components/tables/Pagination";
@@ -17,7 +17,7 @@ export function TeamPage() {
       <h1 className="mt-2 text-4xl">Especialistas que fazem a diferença</h1>
 
       <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {isLoading && Array.from({ length: 6 }).map((_, i) => <EmployeeCardSkeleton key={i} />)}
+        {isLoading && Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
         {isError && (
           <div className="sm:col-span-2 lg:col-span-3">
             <ErrorState onRetry={() => refetch()} />

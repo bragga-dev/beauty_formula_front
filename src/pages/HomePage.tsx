@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { CalendarClock, ShieldCheck, Sparkles, Users, ArrowRight, Scissors } from "lucide-react";
 import { Carousel } from "@/components/ui/Carousel";
 import { ServiceCard } from "@/features/services/ServiceCard";
-import { ServiceCardSkeleton } from "@/features/services/ServiceCardSkeleton";
+import { CardSkeleton } from "@/components/ui/CardSkeleton";
 import { EmployeeCard } from "@/features/team/EmployeeCard";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { usePublicServices } from "@/hooks/useServices";
@@ -86,7 +86,7 @@ export function HomePage() {
         {loadingServices ? (
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <ServiceCardSkeleton key={i} />
+              <CardSkeleton key={i} />
             ))}
           </div>
         ) : servicesError ? (
@@ -118,7 +118,7 @@ export function HomePage() {
           {loadingTeam ? (
             <div className="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="aspect-square animate-pulse rounded-card bg-ink-700" />
+                <CardSkeleton key={i} />
               ))}
             </div>
           ) : teamError ? (
