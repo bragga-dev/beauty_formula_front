@@ -218,6 +218,7 @@ export function DashboardMyAppointmentsPage() {
       <CancelAppointmentModal
         open={!!cancelling}
         serviceName={cancelling?.service.name}
+        payment={cancelling ? paymentBySchedulingId.get(cancelling.id) : undefined}
         isLoading={cancel.isPending}
         onConfirm={handleCancel}
         onClose={() => setCancelling(null)}
