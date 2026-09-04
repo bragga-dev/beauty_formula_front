@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarClock, Eye, XCircle } from "lucide-react";
+import { CalendarClock, Copy, Eye, ExternalLink, RefreshCw, RotateCcw, XCircle } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -9,8 +9,10 @@ import { ErrorState } from "@/components/feedback/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Pagination } from "@/components/tables/Pagination";
 import { useAdminSchedulings, useAdminSchedulingMutations } from "@/hooks/useScheduling";
+import { useAdminPayments, useAdminPaymentMutations } from "@/hooks/usePayment";
 import { CancelAppointmentModal } from "@/features/appointments/CancelAppointmentModal";
 import { AdminRescheduleModal } from "@/features/appointments/AdminRescheduleModal";
+import { RefundPaymentModal } from "@/features/payment/RefundPaymentModal";
 import { useToast } from "@/app/providers/toast-context";
 import { formatCurrencyBRL, formatDate, formatTime } from "@/utils/format";
 import { ROUTES } from "@/constants/routes";
@@ -23,6 +25,14 @@ import {
   type SchedulingOut,
   type SchedulingUpdateInput,
 } from "@/types/scheduling.types";
+import {
+  PAYMENT_STATUS_BADGE,
+  PAYMENT_STATUS_LABELS,
+  PAYMENT_BILLING_TYPE_LABELS,
+  isPaymentSettled,
+  type PaymentOut,
+  type PaymentRefundInput,
+} from "@/types/payment";
 import type { ApiError } from "@/types/common";
 
 const FILTERS: { value: SchedulingFilter; label: string }[] = [
@@ -42,8 +52,20 @@ export function DashboardAppointmentsPage() {
   const { update, cancel } = useAdminSchedulingMutations();
   const { push } = useToast();
 
+  // Mesma estratégia da tela "Meus Agendamentos" do cliente: um lote de
+  // cobranças pra exibir status + ações de pagamento direto no card do
+  // agendamento, sem precisar ir pra aba "Pagamentos" só pra conferir se
+  // um horário específico já foi pago. A aba "Pagamentos" continua
+  // existindo à parte — ela serve outro propósito (busca por cliente,
+  // filtro por forma de pagamento, conciliação financeira geral), não é
+  // substituída por isso.
+  const { data: allPayments } = useAdminPayments({}, 1, 100);
+  const paymentBySchedulingId = new Map((allPayments?.items ?? []).map((p) => [p.scheduling_id, p]));
+  const { sync, refund } = useAdminPaymentMutations();
+
   const [editing, setEditing] = useState<SchedulingOut | null>(null);
   const [cancelling, setCancelling] = useState<SchedulingOut | null>(null);
+  const [refunding, setRefunding] = useState<PaymentOut | null>(null);
 
   function handleFilterChange(value: SchedulingFilter) {
     setFilter(value);
@@ -67,6 +89,26 @@ export function DashboardAppointmentsPage() {
       await cancel.mutateAsync({ id: cancelling.id, payload: { reason } });
       push("Agendamento cancelado.", "success");
       setCancelling(null);
+    } catch (err) {
+      push((err as ApiError).detail as string, "error");
+    }
+  }
+
+  async function handleSyncPayment(payment: PaymentOut) {
+    try {
+      await sync.mutateAsync(payment.id);
+      push("Pagamento sincronizado com a Asaas.", "success");
+    } catch (err) {
+      push((err as ApiError).detail as string, "error");
+    }
+  }
+
+  async function handleRefund(payload: PaymentRefundInput) {
+    if (!refunding) return;
+    try {
+      await refund.mutateAsync({ paymentId: refunding.id, payload });
+      push("Pagamento estornado.", "success");
+      setRefunding(null);
     } catch (err) {
       push((err as ApiError).detail as string, "error");
     }
@@ -120,6 +162,7 @@ export function DashboardAppointmentsPage() {
                 [scheduling.employee.first_name, scheduling.employee.last_name].filter(Boolean).join(" ") ||
                 "profissional";
               const editable = canAdminModifySchedule(scheduling);
+              const payment = paymentBySchedulingId.get(scheduling.id);
               return (
                 <Card key={scheduling.id} className="flex flex-col gap-4 p-5">
                   <div className="flex items-start justify-between gap-3">
@@ -144,7 +187,48 @@ export function DashboardAppointmentsPage() {
                     <span className="text-gold-400">{formatCurrencyBRL(scheduling.price_at_booking)}</span>
                   </div>
 
+                  {payment && (
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-ink-700 pt-3 text-sm text-bone-300">
+                      <Badge variant={PAYMENT_STATUS_BADGE[payment.status]}>
+                        {PAYMENT_STATUS_LABELS[payment.status]}
+                      </Badge>
+                      <span>
+                        {PAYMENT_BILLING_TYPE_LABELS[payment.billing_type as "PIX" | "CREDIT_CARD"] ??
+                          payment.billing_type}
+                      </span>
+                      <span className="text-bone-500">Venc. {formatDate(payment.due_date)}</span>
+                    </div>
+                  )}
+
                   <div className="mt-auto flex flex-wrap items-center justify-end gap-2 border-t border-ink-700 pt-4">
+                    {payment?.status === "PENDING" && payment.pix_copy_paste && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigator.clipboard.writeText(payment.pix_copy_paste!).then(() => push("Código Pix copiado.", "success"))}
+                      >
+                        <Copy className="h-4 w-4" /> Copiar Pix
+                      </Button>
+                    )}
+                    {payment?.status === "PENDING" && payment.invoice_url && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => window.open(payment.invoice_url ?? "", "_blank", "noopener,noreferrer")}
+                      >
+                        <ExternalLink className="h-4 w-4" /> Cobrança
+                      </Button>
+                    )}
+                    {payment && (
+                      <Button variant="ghost" size="icon" onClick={() => handleSyncPayment(payment)} aria-label="Sincronizar com a Asaas">
+                        <RefreshCw className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {payment && isPaymentSettled(payment) && (
+                      <Button variant="ghost" size="icon" onClick={() => setRefunding(payment)} aria-label="Estornar">
+                        <RotateCcw className="h-4 w-4 text-danger-500" />
+                      </Button>
+                    )}
                     {editable && (
                       <>
                         <Button variant="ghost" size="sm" onClick={() => setCancelling(scheduling)}>
@@ -186,6 +270,14 @@ export function DashboardAppointmentsPage() {
         isLoading={cancel.isPending}
         onConfirm={handleCancel}
         onClose={() => setCancelling(null)}
+      />
+
+      <RefundPaymentModal
+        open={!!refunding}
+        paymentValue={refunding ? formatCurrencyBRL(refunding.value) : undefined}
+        isLoading={refund.isPending}
+        onClose={() => setRefunding(null)}
+        onConfirm={handleRefund}
       />
     </div>
   );
