@@ -9,7 +9,7 @@ interface DeleteAccountModalProps {
   open: boolean;
   isLoading?: boolean;
   onClose: () => void;
-  onConfirmed: () => void;
+  onConfirmed: (message: string) => void;
 }
 
 /**
@@ -34,8 +34,8 @@ export function DeleteAccountModal({ open, isLoading, onClose, onConfirmed }: De
     setError(null);
     setIsSubmitting(true);
     try {
-      await authService.deleteAccount(password);
-      onConfirmed();
+      const response = await authService.deleteAccount(password);
+      onConfirmed(response.detail);
     } catch (err) {
       setError((err as ApiError).detail as string);
     } finally {
@@ -47,9 +47,10 @@ export function DeleteAccountModal({ open, isLoading, onClose, onConfirmed }: De
     <Modal open={open} onClose={onClose} title="Excluir minha conta" size="sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         <p className="text-sm text-bone-400">
-          Isso apaga sua conta e seus dados pessoais permanentemente e encerra todas as sessões ativas. Essa ação
-          não pode ser desfeita. Se você tiver agendamentos, pagamentos ou avaliações no histórico, a exclusão
-          será bloqueada — nesse caso, entre em contato para resolver isso antes.
+          Isso encerra todas as sessões ativas e remove seus dados pessoais (nome, foto, telefone, data de
+          nascimento, Instagram) permanentemente. Essa ação não pode ser desfeita. Se você tiver agendamentos ou
+          pagamentos no histórico, a conta é desativada e anonimizada em vez de apagada por completo — esses
+          registros são mantidos por obrigação legal, mas deixam de estar associados aos seus dados pessoais.
         </p>
 
         {error && (

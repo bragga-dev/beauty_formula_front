@@ -153,9 +153,9 @@ export function ProfilePage() {
     }
   }
 
-  async function handleAccountDeleted() {
+  async function handleAccountDeleted(message: string) {
     setIsDeleteAccountOpen(false);
-    push("Conta excluída. Sentiremos sua falta!", "success");
+    push(message, "success");
     await logout();
     navigate(ROUTES.login);
   }

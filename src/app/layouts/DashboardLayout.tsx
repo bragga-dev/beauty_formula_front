@@ -13,6 +13,7 @@ import {
   Package,
   MailQuestion,
   CreditCard,
+  CircleDollarSign,
   Wallet,
   FileBarChart2,
   Menu,
@@ -51,6 +52,7 @@ export function DashboardLayout() {
       { to: ROUTES.dashboardTeam, label: "Equipe", icon: Users },
       { to: ROUTES.dashboardRatings, label: "Avaliações", icon: Star },
       { to: ROUTES.dashboardPayments, label: "Pagamentos", icon: CreditCard },
+      { to: ROUTES.dashboardRefundRequests, label: "Reembolsos", icon: CircleDollarSign },
       { to: ROUTES.dashboardReports, label: "Relatórios", icon: FileBarChart2 },
     );
   }

@@ -293,7 +293,7 @@ export function DashboardReportsPage() {
                       percentage: Number(s.percentage),
                     })) ?? []
                   }
-                  centerLabel="Concluídos"
+                  centerLabel="Total"
                   centerValue={balance?.total_appointments ?? 0}
                 />
               )}
