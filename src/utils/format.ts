@@ -36,6 +36,21 @@ export function dateToMonthInput(value: string): string {
   return value.slice(0, 7);
 }
 
+/** Tempo relativo curto ("agora", "5 min", "3h", "2d") pra listas de notificação. */
+export function formatRelativeTime(value: string | Date): string {
+  const date = typeof value === "string" ? new Date(value) : value;
+  const diffMs = Date.now() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+
+  if (diffMin < 1) return "agora";
+  if (diffMin < 60) return `${diffMin} min`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `${diffHours}h`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) return `${diffDays}d`;
+  return formatDate(date);
+}
+
 export function initials(firstName?: string | null, lastName?: string | null): string {
   const a = firstName?.[0] ?? "";
   const b = lastName?.[0] ?? "";

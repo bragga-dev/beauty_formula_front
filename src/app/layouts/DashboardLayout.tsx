@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { SkipLink } from "@/components/ui/SkipLink";
+import { NotificationBell } from "@/features/notifications/NotificationBell";
 import { useAuth } from "@/app/providers/auth-context";
 import { ROUTES } from "@/constants/routes";
 import { initials } from "@/utils/format";
@@ -141,9 +142,12 @@ export function DashboardLayout() {
               Fórmula da Beleza
             </span>
           </Link>
-          <button onClick={() => setMobileOpen(true)} aria-label="Abrir menu">
-            <Menu className="h-6 w-6 text-bone-100" />
-          </button>
+          <div className="flex items-center gap-1">
+            <NotificationBell />
+            <button onClick={() => setMobileOpen(true)} aria-label="Abrir menu">
+              <Menu className="h-6 w-6 text-bone-100" />
+            </button>
+          </div>
         </div>
 
         {mobileOpen && (
@@ -161,6 +165,10 @@ export function DashboardLayout() {
             </div>
           </div>
         )}
+
+        <div className="hidden items-center justify-end border-b border-ink-700 bg-ink-900 px-6 py-2.5 lg:flex">
+          <NotificationBell />
+        </div>
 
         <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 p-4 focus:outline-none sm:p-6 lg:p-8">
           <div className="mx-auto w-full min-w-0 max-w-7xl">

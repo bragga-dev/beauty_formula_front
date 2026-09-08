@@ -5,9 +5,11 @@ interface DropdownProps {
   trigger: ReactNode;
   children: ReactNode;
   align?: "left" | "right";
+  panelClassName?: string;
+  closeOnContentClick?: boolean;
 }
 
-export function Dropdown({ trigger, children, align = "right" }: DropdownProps) {
+export function Dropdown({ trigger, children, align = "right", panelClassName, closeOnContentClick = true }: DropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -29,8 +31,9 @@ export function Dropdown({ trigger, children, align = "right" }: DropdownProps) 
           className={cn(
             "absolute top-full z-40 mt-2 min-w-48 overflow-hidden rounded-card border border-ink-700 bg-ink-800 py-1 shadow-elevated",
             align === "right" ? "right-0" : "left-0",
+            panelClassName,
           )}
-          onClick={() => setOpen(false)}
+          onClick={closeOnContentClick ? () => setOpen(false) : undefined}
         >
           {children}
         </div>
