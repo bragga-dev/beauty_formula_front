@@ -9,6 +9,7 @@ import { ErrorState } from "@/components/feedback/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useScheduling, useSchedulingMutations } from "@/hooks/useScheduling";
 import { useMyRatings } from "@/hooks/useRatings";
+import { usePaymentForScheduling } from "@/hooks/usePayment";
 import { CancelAppointmentModal } from "@/features/appointments/CancelAppointmentModal";
 import { RescheduleAppointmentModal } from "@/features/appointments/RescheduleAppointmentModal";
 import { RateAppointmentModal } from "@/features/ratings/RateAppointmentModal";
@@ -30,6 +31,7 @@ export function DashboardAppointmentDetailPage() {
   const { data: scheduling, isLoading, isError, refetch } = useScheduling(appointmentId);
   const { cancel } = useSchedulingMutations();
   const { data: myRatings } = useMyRatings();
+  const { payment } = usePaymentForScheduling(scheduling?.id);
   const { push } = useToast();
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
@@ -201,6 +203,7 @@ export function DashboardAppointmentDetailPage() {
       <CancelAppointmentModal
         open={cancelOpen}
         serviceName={scheduling.service.name}
+        payment={payment}
         isLoading={cancel.isPending}
         onConfirm={handleCancel}
         onClose={() => setCancelOpen(false)}

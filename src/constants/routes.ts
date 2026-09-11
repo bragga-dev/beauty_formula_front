@@ -28,11 +28,13 @@ export const ROUTES = {
   dashboardContacts: "/painel/contatos",
   dashboardUsers: "/painel/usuarios",
   dashboardTeam: "/painel/equipe",
+  dashboardTeamDetail: (id: string) => `/painel/equipe/${id}`,
   dashboardAppointments: "/painel/agendamentos",
   dashboardAppointmentAdminDetail: (id: string) => `/painel/agendamentos/${id}`,
   dashboardMyServices: "/painel/meus-servicos",
   dashboardMySchedule: "/painel/minha-agenda",
   dashboardMyTimeOff: "/painel/meus-bloqueios",
+  dashboardMyCommissions: "/painel/minhas-comissoes",
 
   dashboardMyAppointments: "/painel/meus-agendamentos",
   dashboardAppointmentDetail: (id: string) => `/painel/meus-agendamentos/${id}`,
@@ -43,4 +45,7 @@ export const ROUTES = {
   dashboardRatings: "/painel/avaliacoes",
 
   dashboardPayments: "/painel/pagamentos",
+  dashboardRefundRequests: "/painel/reembolsos",
+
+  dashboardReports: "/painel/relatorios",
 } as const;

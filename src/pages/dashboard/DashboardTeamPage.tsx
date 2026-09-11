@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { UserPlus, AtSign, Users } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -12,9 +13,11 @@ import { useTeam } from "@/hooks/useTeam";
 import { useToast } from "@/app/providers/toast-context";
 import { authService } from "@/services/auth.service";
 import { initials } from "@/utils/format";
+import { ROUTES } from "@/constants/routes";
 import type { ApiError } from "@/types/common";
 
 export function DashboardTeamPage() {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, refetch } = useTeam(page, 12);
   const { push } = useToast();
@@ -65,7 +68,16 @@ export function DashboardTeamPage() {
             {data?.items.map((employee) => {
               const name = [employee.first_name, employee.last_name].filter(Boolean).join(" ") || "Sem nome";
               return (
-                <Card key={employee.id} className="overflow-hidden">
+                <Card
+                  key={employee.id}
+                  onClick={() => navigate(ROUTES.dashboardTeamDetail(employee.id))}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") navigate(ROUTES.dashboardTeamDetail(employee.id));
+                  }}
+                  className="cursor-pointer overflow-hidden transition-colors hover:border-gold-400/50"
+                >
                   <div className="aspect-square bg-ink-700">
                     {employee.photo_url ? (
                       <img src={employee.photo_url} alt={name} className="h-full w-full object-cover" />

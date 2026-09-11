@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   CalendarClock,
   Clock,
-  Pencil,
   Scissors,
   Trash2,
   User,
@@ -20,7 +19,7 @@ import { ErrorState } from "@/components/feedback/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useAdminScheduling, useAdminSchedulingMutations } from "@/hooks/useScheduling";
 import { CancelAppointmentModal } from "@/features/appointments/CancelAppointmentModal";
-import { EditAppointmentModal } from "@/features/appointments/EditAppointmentModal";
+import { AdminRescheduleModal } from "@/features/appointments/AdminRescheduleModal";
 import { useToast } from "@/app/providers/toast-context";
 import { formatCurrencyBRL, formatDate, formatDuration, formatTime, initials } from "@/utils/format";
 import { ROUTES } from "@/constants/routes";
@@ -44,11 +43,11 @@ export function DashboardAppointmentAdminDetailPage() {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  async function handleEdit(payload: SchedulingUpdateInput) {
+  async function handleReschedule(payload: SchedulingUpdateInput) {
     if (!scheduling) return;
     try {
       await update.mutateAsync({ id: scheduling.id, payload });
-      push("Agendamento atualizado.", "success");
+      push("Agendamento reagendado com sucesso!", "success");
       setEditOpen(false);
     } catch (err) {
       push((err as ApiError).detail as string, "error");
@@ -228,7 +227,7 @@ export function DashboardAppointmentAdminDetailPage() {
                   <XCircle className="h-4 w-4" /> Cancelar
                 </Button>
                 <Button onClick={() => setEditOpen(true)}>
-                  <Pencil className="h-4 w-4" /> Editar
+                  <CalendarClock className="h-4 w-4" /> Reagendar
                 </Button>
               </>
             )}
@@ -236,11 +235,11 @@ export function DashboardAppointmentAdminDetailPage() {
         </CardBody>
       </Card>
 
-      <EditAppointmentModal
+      <AdminRescheduleModal
         open={editOpen}
         scheduling={scheduling}
         isSubmitting={update.isPending}
-        onSubmit={handleEdit}
+        onSubmit={handleReschedule}
         onClose={() => setEditOpen(false)}
       />
 

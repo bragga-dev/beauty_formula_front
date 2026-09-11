@@ -1,9 +1,8 @@
 import { Link } from "react-router-dom";
 import { CalendarClock, ShieldCheck, Sparkles, Users, ArrowRight, Scissors } from "lucide-react";
-import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Carousel } from "@/components/ui/Carousel";
 import { ServiceCard } from "@/features/services/ServiceCard";
-import { ServiceCardSkeleton } from "@/features/services/ServiceCardSkeleton";
+import { CardSkeleton } from "@/components/ui/CardSkeleton";
 import { EmployeeCard } from "@/features/team/EmployeeCard";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { usePublicServices } from "@/hooks/useServices";
@@ -41,7 +40,7 @@ export function HomePage() {
         <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-32 lg:px-8">
           <div className="max-w-xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/30 bg-gold-400/5 px-4 py-1.5 text-xs uppercase tracking-widest text-gold-400">
-              <Scissors className="h-3.5 w-3.5" /> Barbearia &amp; Salão
+              <Scissors className="h-3.5 w-3.5" />  Salão de Beleza
             </span>
             <h1 className="mt-6 text-5xl leading-[1.05] sm:text-6xl">
               Estilo que impõe.
@@ -53,14 +52,6 @@ export function HomePage() {
               Na Fórmula da Beleza, unimos técnica, estilo e atendimento de excelência para realçar o que
               você tem de melhor.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <ButtonLink to={ROUTES.booking} size="lg" variant="primary">
-                <CalendarClock className="h-4 w-4" /> Agendar Horário
-              </ButtonLink>
-              <ButtonLink to={ROUTES.services} size="lg" variant="outline">
-                Nossos Serviços
-              </ButtonLink>
-            </div>
             <div className="razor-line mt-10 max-w-xs" />
           </div>
         </div>
@@ -95,7 +86,7 @@ export function HomePage() {
         {loadingServices ? (
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <ServiceCardSkeleton key={i} />
+              <CardSkeleton key={i} />
             ))}
           </div>
         ) : servicesError ? (
@@ -127,7 +118,7 @@ export function HomePage() {
           {loadingTeam ? (
             <div className="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="aspect-square animate-pulse rounded-card bg-ink-700" />
+                <CardSkeleton key={i} />
               ))}
             </div>
           ) : teamError ? (

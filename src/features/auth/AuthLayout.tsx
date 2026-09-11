@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-import { Logo } from "@/components/ui/Logo";
-import { Scissors } from "lucide-react";
+import { Link } from "react-router-dom";
 import authHeroImage from "@/assets/auth-hero.jpg";
+import formula1Image from "@/assets/formula-1.jpg";
+import { ROUTES } from "@/constants/routes";
 
 interface AuthLayoutProps {
   title: string;
@@ -26,9 +27,13 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
         />
         <div className="absolute inset-0 bg-gradient-to-br from-crimson-900/25 via-transparent to-gold-500/10" aria-hidden="true" />
 
-        <Logo className="relative z-10" />
+        <Link to={ROUTES.home} className="relative z-10 flex items-center gap-3">
+          <img src={formula1Image} alt="Fórmula da Beleza" className="h-12 w-auto object-contain" />
+          <span className="font-display text-xl font-bold text-bone-50">
+            Fórmula da Beleza
+          </span>
+        </Link>
         <div className="relative z-10">
-          <Scissors className="h-12 w-12 text-crimson-500" strokeWidth={1.2} />
           <h2 className="mt-6 max-w-sm text-3xl leading-tight">
             Estilo, confiança e atitude em um só lugar.
           </h2>
@@ -42,7 +47,12 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
       <div className="flex min-w-0 flex-col items-center justify-center px-4 py-12 sm:px-6">
         <div className="w-full min-w-0 max-w-sm">
           <div className="mb-8 lg:hidden">
-            <Logo />
+            <Link to={ROUTES.home} className="flex items-center gap-3">
+              <img src={formula1Image} alt="Fórmula da Beleza" className="h-10 w-auto object-contain" />
+              <span className="font-display text-lg font-bold text-bone-50">
+                Fórmula da Beleza
+              </span>
+            </Link>
           </div>
           <h1 className="text-2xl">{title}</h1>
           <p className="mt-1 text-sm text-bone-500">{subtitle}</p>

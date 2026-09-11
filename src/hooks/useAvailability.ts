@@ -18,3 +18,26 @@ export function useEligibleEmployees(serviceId?: string) {
     enabled: !!serviceId,
   });
 }
+
+// Calendário mensal (admin) de um funcionário: expediente, bloqueios e
+// agendamentos, dia a dia. `month` no formato yyyy-mm-dd. A query key
+// (prefixo ["availability", "employee-calendar"]) é a mesma invalidada
+// por `useUpdateBookingWindow`, pra recarregar depois de editar a janela.
+export function useEmployeeCalendar(employeeId?: string, month?: string) {
+  return useQuery({
+    queryKey: ["availability", "employee-calendar", employeeId, month],
+    queryFn: () => availabilityService.getEmployeeCalendar(employeeId as string, month as string),
+    enabled: !!employeeId && !!month,
+  });
+}
+
+// Calendário mensal público (sem auth) — tela de perfil público do
+// funcionário, aba "Agenda". Query key própria (não compartilha cache
+// com a versão admin, que é outro endpoint com outro shape de dado).
+export function usePublicEmployeeCalendar(employeeId?: string, month?: string) {
+  return useQuery({
+    queryKey: ["availability", "public-employee-calendar", employeeId, month],
+    queryFn: () => availabilityService.getPublicEmployeeCalendar(employeeId as string, month as string),
+    enabled: !!employeeId && !!month,
+  });
+}

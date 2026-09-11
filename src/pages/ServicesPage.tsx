@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { ServiceCard } from "@/features/services/ServiceCard";
-import { ServiceCardSkeleton } from "@/features/services/ServiceCardSkeleton";
+import { CardSkeleton } from "@/components/ui/CardSkeleton";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { Pagination } from "@/components/tables/Pagination";
@@ -46,7 +46,7 @@ export function ServicesPage() {
       </div>
 
       <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {isLoading && Array.from({ length: 6 }).map((_, i) => <ServiceCardSkeleton key={i} />)}
+        {isLoading && Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
         {isError && (
           <div className="sm:col-span-2 lg:col-span-3">
             <ErrorState onRetry={() => refetch()} />

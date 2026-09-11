@@ -66,6 +66,9 @@ const DashboardUsersPage = lazy(() =>
 const DashboardTeamPage = lazy(() =>
   import("@/pages/dashboard/DashboardTeamPage").then((m) => ({ default: m.DashboardTeamPage })),
 );
+const DashboardEmployeeDetailPage = lazy(() =>
+  import("@/pages/dashboard/DashboardEmployeeDetailPage").then((m) => ({ default: m.DashboardEmployeeDetailPage })),
+);
 const DashboardAppointmentsPage = lazy(() =>
   import("@/pages/dashboard/DashboardAppointmentsPage").then((m) => ({ default: m.DashboardAppointmentsPage })),
 );
@@ -82,6 +85,9 @@ const DashboardMySchedulePage = lazy(() =>
 );
 const DashboardMyTimeOffPage = lazy(() =>
   import("@/pages/dashboard/DashboardMyTimeOffPage").then((m) => ({ default: m.DashboardMyTimeOffPage })),
+);
+const DashboardMyCommissionsPage = lazy(() =>
+  import("@/pages/dashboard/DashboardMyCommissionsPage").then((m) => ({ default: m.DashboardMyCommissionsPage })),
 );
 const DashboardMyAppointmentsPage = lazy(() =>
   import("@/pages/dashboard/DashboardMyAppointmentsPage").then((m) => ({ default: m.DashboardMyAppointmentsPage })),
@@ -106,6 +112,12 @@ const DashboardRatingsPage = lazy(() =>
 );
 const DashboardPaymentsPage = lazy(() =>
   import("@/pages/dashboard/DashboardPaymentsPage").then((m) => ({ default: m.DashboardPaymentsPage })),
+);
+const DashboardRefundRequestsPage = lazy(() =>
+  import("@/pages/dashboard/DashboardRefundRequestsPage").then((m) => ({ default: m.DashboardRefundRequestsPage })),
+);
+const DashboardReportsPage = lazy(() =>
+  import("@/pages/dashboard/DashboardReportsPage").then((m) => ({ default: m.DashboardReportsPage })),
 );
 
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
@@ -155,9 +167,12 @@ export function AppRouter() {
               <Route path={ROUTES.dashboardContacts} element={<DashboardContactsPage />} />
               <Route path={ROUTES.dashboardUsers} element={<DashboardUsersPage />} />
               <Route path={ROUTES.dashboardTeam} element={<DashboardTeamPage />} />
+              <Route path="/painel/equipe/:employeeId" element={<DashboardEmployeeDetailPage />} />
               <Route path={ROUTES.dashboardAppointments} element={<DashboardAppointmentsPage />} />
               <Route path="/painel/agendamentos/:appointmentId" element={<DashboardAppointmentAdminDetailPage />} />
               <Route path={ROUTES.dashboardPayments} element={<DashboardPaymentsPage />} />
+              <Route path={ROUTES.dashboardRefundRequests} element={<DashboardRefundRequestsPage />} />
+              <Route path={ROUTES.dashboardReports} element={<DashboardReportsPage />} />
             </Route>
           </Route>
 
@@ -166,6 +181,7 @@ export function AppRouter() {
               <Route path={ROUTES.dashboardMyServices} element={<DashboardMyServicesPage />} />
               <Route path={ROUTES.dashboardMySchedule} element={<DashboardMySchedulePage />} />
               <Route path={ROUTES.dashboardMyTimeOff} element={<DashboardMyTimeOffPage />} />
+              <Route path={ROUTES.dashboardMyCommissions} element={<DashboardMyCommissionsPage />} />
               <Route path={ROUTES.dashboardMyClientAppointments} element={<DashboardMyClientAppointmentsPage />} />
               <Route
                 path="/painel/meus-atendimentos/:appointmentId"

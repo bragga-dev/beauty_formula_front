@@ -3,6 +3,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
+import { ImagePickerField } from "@/components/media/ImagePickerField";
 import type { ProductPrivateOut, ProductCreateInput } from "@/types/products";
 
 interface ProductFormModalProps {
@@ -86,17 +87,12 @@ export function ProductFormModal({ open, onClose, onSubmit, product, isSubmittin
             required
           />
         </div>
-        <div>
-          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-bone-500">
-            {product ? "Trocar imagem (opcional)" : "Imagem"}
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-            className="block w-full text-sm text-bone-400 file:mr-4 file:rounded-card file:border-0 file:bg-ink-700 file:px-4 file:py-2 file:text-xs file:uppercase file:text-bone-100 hover:file:bg-ink-600"
-          />
-        </div>
+        <ImagePickerField
+          label={product ? "Trocar imagem (opcional)" : "Imagem"}
+          value={image}
+          onChange={setImage}
+          existingImageUrl={product?.image_url}
+        />
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
             Cancelar

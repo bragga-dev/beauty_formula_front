@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate, Link } from "react-router-dom";
 import {
   LayoutGrid,
   User,
@@ -13,16 +13,20 @@ import {
   Package,
   MailQuestion,
   CreditCard,
+  CircleDollarSign,
+  Wallet,
+  FileBarChart2,
   Menu,
   X,
   LogOut,
 } from "lucide-react";
-import { Logo } from "@/components/ui/Logo";
 import { Avatar } from "@/components/ui/Avatar";
+import { SkipLink } from "@/components/ui/SkipLink";
 import { useAuth } from "@/app/providers/auth-context";
 import { ROUTES } from "@/constants/routes";
 import { initials } from "@/utils/format";
 import { cn } from "@/utils/cn";
+import formula1Image from "@/assets/formula-1.jpg";
 
 interface NavItem {
   to: string;
@@ -48,6 +52,8 @@ export function DashboardLayout() {
       { to: ROUTES.dashboardTeam, label: "Equipe", icon: Users },
       { to: ROUTES.dashboardRatings, label: "Avaliações", icon: Star },
       { to: ROUTES.dashboardPayments, label: "Pagamentos", icon: CreditCard },
+      { to: ROUTES.dashboardRefundRequests, label: "Reembolsos", icon: CircleDollarSign },
+      { to: ROUTES.dashboardReports, label: "Relatórios", icon: FileBarChart2 },
     );
   }
 
@@ -57,6 +63,7 @@ export function DashboardLayout() {
       { to: ROUTES.dashboardMyClientAppointments, label: "Meus Atendimentos", icon: CalendarCheck },
       { to: ROUTES.dashboardMySchedule, label: "Minha Agenda", icon: CalendarClock },
       { to: ROUTES.dashboardMyTimeOff, label: "Meus Bloqueios", icon: CalendarOff },
+      { to: ROUTES.dashboardMyCommissions, label: "Minhas Comissões", icon: Wallet },
       { to: ROUTES.dashboardRatings, label: "Avaliações", icon: Star },
     );
   }
@@ -71,14 +78,17 @@ export function DashboardLayout() {
 
   async function handleLogout() {
     await logout();
-    navigate(ROUTES.home);
+    navigate(ROUTES.login);
   }
 
   const NavContent = (
     <>
-      <div className="px-2">
-        <Logo />
-      </div>
+      <Link to={ROUTES.home} className="flex items-center gap-3 px-2">
+        <img src={formula1Image} alt="Fórmula da Beleza" className="h-10 w-auto object-contain" />
+        <span className="font-display text-lg font-bold text-bone-50">
+          Fórmula da Beleza
+        </span>
+      </Link>
       <nav className="mt-8 flex flex-1 flex-col gap-1">
         {items.map((item) => (
           <NavLink
@@ -118,13 +128,19 @@ export function DashboardLayout() {
 
   return (
     <div className="flex min-h-screen bg-ink-950">
+      <SkipLink />
       <aside className="hidden w-64 shrink-0 flex-col border-r border-ink-700 bg-ink-900 p-4 lg:flex">
         {NavContent}
       </aside>
 
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between border-b border-ink-700 bg-ink-900 px-4 py-3 lg:hidden">
-          <Logo />
+          <Link to={ROUTES.home} className="flex items-center gap-3">
+            <img src={formula1Image} alt="Fórmula da Beleza" className="h-8 w-auto object-contain" />
+            <span className="font-display text-base font-bold text-bone-50">
+              Fórmula da Beleza
+            </span>
+          </Link>
           <button onClick={() => setMobileOpen(true)} aria-label="Abrir menu">
             <Menu className="h-6 w-6 text-bone-100" />
           </button>
@@ -146,7 +162,7 @@ export function DashboardLayout() {
           </div>
         )}
 
-        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+        <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 p-4 focus:outline-none sm:p-6 lg:p-8">
           <div className="mx-auto w-full min-w-0 max-w-7xl">
             <Outlet />
           </div>

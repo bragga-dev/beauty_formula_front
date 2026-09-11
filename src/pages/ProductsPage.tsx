@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Search, PackageSearch } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { ProductCard } from "@/features/products/ProductCard";
-import { ProductCardSkeleton } from "@/features/products/ProductCardSkeleton";
+import { CardSkeleton } from "@/components/ui/CardSkeleton";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { Pagination } from "@/components/tables/Pagination";
@@ -46,7 +46,10 @@ export function ProductsPage() {
       </div>
 
       <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {isLoading && Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)}
+        {isLoading &&
+          Array.from({ length: 6 }).map((_, i) => (
+            <CardSkeleton key={i} lines={["h-4 w-2/3", "h-3 w-full", "h-5 w-1/3"]} />
+          ))}
         {isError && (
           <div className="sm:col-span-2 lg:col-span-3">
             <ErrorState onRetry={() => refetch()} />

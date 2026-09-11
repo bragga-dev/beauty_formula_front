@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/Card";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { ROUTES } from "@/constants/routes";
 import { useServiceRatingSummary } from "@/hooks/useRatings";
+import { formatCurrencyBRL } from "@/utils/format";
 import type { ServiceOut } from "@/types/service";
 
 export function ServiceCard({ service }: { service: ServiceOut }) {
@@ -25,12 +26,16 @@ export function ServiceCard({ service }: { service: ServiceOut }) {
             <h3 className="font-display text-base uppercase tracking-wide text-bone-50">{service.name}</h3>
             <ArrowUpRight className="h-4 w-4 shrink-0 text-gold-400 opacity-0 transition-opacity group-hover:opacity-100" />
           </div>
-          <RatingStars
-            value={summary?.average_rating ?? 0}
-            totalReviews={summary?.total_reviews}
-            size="xs"
-            className="mt-3"
-          />
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <RatingStars
+              value={summary?.average_rating ?? 0}
+              totalReviews={summary?.total_reviews}
+              size="xs"
+            />
+            <span className="shrink-0 font-display text-sm text-gold-400">
+              {formatCurrencyBRL(service.price)}
+            </span>
+          </div>
         </div>
       </Card>
     </Link>

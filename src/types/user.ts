@@ -68,4 +68,6 @@ export interface SessionOut {
   id: number;
   created_at?: string | null;
   expires_at: string;
+  /** Label legível ("Chrome no Windows"), calculado no backend a partir do user-agent bruto. `null` pra sessões antigas, criadas antes desse rastreamento existir. */
+  device?: string | null;
 }

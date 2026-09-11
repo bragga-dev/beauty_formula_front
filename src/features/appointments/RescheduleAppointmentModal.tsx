@@ -1,4 +1,4 @@
-    import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CalendarClock, Users } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
@@ -68,11 +68,17 @@ export function RescheduleAppointmentModal({
     refetch: refetchEligible,
   } = useEligibleEmployees(open ? serviceId : undefined);
 
-  const days = useMemo(() => nextDays(DAYS_WINDOW), [open]);
-
   const calendarEmployees = useMemo<EmployeeTeamOut[]>(
     () => (selectedEmployee ? [selectedEmployee] : []),
     [selectedEmployee],
+  );
+
+  // Usa a janela configurada pelo admin pra esse funcionário — sem isso,
+  // um funcionário com janela maior que o padrão (30) ficaria travado no
+  // padrão aqui, mesmo já refletindo certo no fluxo normal de agendamento.
+  const days = useMemo(
+    () => nextDays(selectedEmployee?.booking_window_days ?? DAYS_WINDOW),
+    [open, selectedEmployee],
   );
 
   const calendar = useCalendarAvailability(open ? calendarEmployees : [], serviceId, open ? days : []);

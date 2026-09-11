@@ -29,10 +29,24 @@ export interface EmployeeTeamOut {
   photo_url?: string | null;
   bio?: string | null;
   instagram?: string | null;
+  /** Quantos dias à frente a agenda desse funcionário fica aberta pra agendar/reagendar. */
+  booking_window_days: number;
 }
 
 export interface EmployeeTeamDetailOut extends EmployeeTeamOut {
   services: EmployeeServiceLinkOut[];
+}
+
+/** Payload de `PATCH /employees/team/{employee_id}/profile` (admin). */
+export interface EmployeeAdminUpdateInput {
+  username?: string;
+  first_name?: string;
+  last_name?: string;
+  gender?: Gender;
+  phone?: string;
+  birth_date?: string;
+  instagram?: string;
+  bio?: string;
 }
 
 export interface EmployeeServiceOut {

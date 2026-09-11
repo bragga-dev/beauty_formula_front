@@ -51,14 +51,6 @@ export const schedulingService = {
       .patch<SchedulingOut>(`/scheduling/reschedule-my-scheduling/${schedulingId}`, payload)
       .then((r) => r.data),
 
-  /**
-   * Confirmação manual (CREATED -> CONFIRMED) — fallback pro caso do
-   * cliente já ter pago mas o webhook da Asaas ainda não ter processado.
-   * Normalmente desnecessário: a confirmação acontece sozinha.
-   */
-  confirmMine: (schedulingId: string) =>
-    api.patch<SchedulingOut>(`/scheduling/confirm-my-scheduling/${schedulingId}`).then((r) => r.data),
-
   // ═══════════════════════════════════════════════════════════════
   // Funcionário
   // ═══════════════════════════════════════════════════════════════

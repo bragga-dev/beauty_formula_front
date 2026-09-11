@@ -116,16 +116,6 @@ export function canClientCancelScheduling(scheduling: SchedulingOut): boolean {
 }
 
 /**
- * O cliente só precisa confirmar manualmente (fallback) enquanto o
- * agendamento ainda está CREATED — normalmente a confirmação acontece
- * sozinha assim que o webhook da Asaas processa o pagamento. Espelha a
- * checagem de `confirm_scheduling_for_client` no backend.
- */
-export function canClientConfirmScheduling(scheduling: SchedulingOut): boolean {
-  return scheduling.status === "created";
-}
-
-/**
  * Reagendar (pelo cliente) só vale com status CONFIRMED — espelha
  * `Scheduling.can_be_rescheduled` no backend.
  */
