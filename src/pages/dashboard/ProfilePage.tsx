@@ -37,7 +37,10 @@ export function ProfilePage() {
   // Mostrar esse formulário pra ele só resulta em erro de autorização
   // ao salvar, então nem tentamos.
   const isAdmin = me?.user.role === "admin";
-  const profile = me?.client ?? me?.employee;
+  // Gerente tem perfil próprio (nome + foto) editado em /managers/{id}; não tem
+  // exclusão de conta própria no backend (delete-account é só cliente/funcionário).
+  const isManager = me?.user.role === "manager";
+  const profile = me?.client ?? me?.employee ?? me?.manager;
 
   const [form, setForm] = useState({
     first_name: "",
@@ -55,14 +58,15 @@ export function ProfilePage() {
 
   useEffect(() => {
     if (!profile) return;
+    const full = me?.client ?? me?.employee;
     setForm({
       first_name: profile.first_name ?? "",
       last_name: profile.last_name ?? "",
-      username: profile.username ?? "",
-      phone: profile.phone ?? "",
-      instagram: profile.instagram ?? "",
-      birth_date: profile.birth_date ?? "",
-      gender: profile.gender,
+      username: full?.username ?? "",
+      phone: full?.phone ?? "",
+      instagram: full?.instagram ?? "",
+      birth_date: full?.birth_date ?? "",
+      gender: full?.gender ?? "Masculino",
       bio: (me?.employee?.bio as string) ?? "",
     });
   }, [profile, me]);
@@ -71,6 +75,15 @@ export function ProfilePage() {
     e.preventDefault();
     setIsSaving(true);
     try {
+      if (isManager && me?.manager) {
+        const updated = await profileService.updateManager(me.manager.id, {
+          first_name: form.first_name,
+          last_name: form.last_name,
+        });
+        updateProfile(updated);
+        push("Perfil atualizado com sucesso!", "success");
+        return;
+      }
       const payload = {
         first_name: form.first_name,
         last_name: form.last_name,
@@ -105,7 +118,10 @@ export function ProfilePage() {
   async function handleCropConfirm(croppedFile: File) {
     setIsUploadingPhoto(true);
     try {
-      if (isEmployee) {
+      if (isManager && me?.manager) {
+        const updated = await profileService.uploadManagerPhoto(me.manager.id, croppedFile);
+        updateProfile(updated);
+      } else if (isEmployee) {
         const updated = await profileService.uploadEmployeePhoto(croppedFile);
         updateProfile(updated);
       } else {
@@ -215,6 +231,8 @@ export function ProfilePage() {
                   onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))}
                 />
               </div>
+              {!isManager && (
+              <>
               <Input
                 label="Nome de usuário"
                 value={form.username}
@@ -249,6 +267,8 @@ export function ProfilePage() {
                   <option value="Outro">Outro</option>
                 </Select>
               </div>
+              </>
+              )}
               {isEmployee && (
                 <Textarea
                   label="Bio"
@@ -317,7 +337,7 @@ export function ProfilePage() {
             </Button>
           </div>
 
-          {!isAdmin && (
+          {!isAdmin && !isManager && (
             <div className="flex flex-wrap items-center justify-between gap-4 border-t border-ink-700 pt-4">
               <div>
                 <p className="text-sm text-bone-100">Excluir minha conta</p>

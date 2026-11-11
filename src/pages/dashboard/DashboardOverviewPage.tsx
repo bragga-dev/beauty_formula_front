@@ -8,6 +8,7 @@ import {
   Package,
   MailQuestion,
   UserCog,
+  Briefcase,
   Star,
   ArrowRight,
   FileBarChart2,
@@ -25,6 +26,7 @@ import { schedulingService } from "@/services/scheduling.service";
 import { productsService } from "@/services/products.service";
 import { contactService } from "@/services/contact.service";
 import { adminUsersService } from "@/services/admin-users.service";
+import { managerService } from "@/services/manager.service";
 import { ratingsService } from "@/services/ratings.service";
 import { reportService } from "@/services/report.service";
 import { formatCurrencyBRL } from "@/utils/format";
@@ -66,46 +68,52 @@ function StatCard({
 export function DashboardOverviewPage() {
   const { me } = useAuth();
   const role = me?.user.role;
+  const isStaff = role === "admin" || role === "manager";
 
   const adminServices = useQuery({
     queryKey: ["dashboard", "admin-services"],
     queryFn: () => servicesService.listPrivate(1, 1),
-    enabled: role === "admin",
+    enabled: isStaff,
   });
   const adminTeam = useQuery({
     queryKey: ["dashboard", "admin-team"],
     queryFn: () => teamService.list(1, 1),
-    enabled: role === "admin",
+    enabled: isStaff,
   });
   const adminAppointments = useQuery({
     queryKey: ["dashboard", "admin-appointments"],
     queryFn: () => schedulingService.listAll({ page: 1, page_size: 1 }),
-    enabled: role === "admin",
+    enabled: isStaff,
   });
   const adminProducts = useQuery({
     queryKey: ["dashboard", "admin-products"],
     queryFn: () => productsService.listPrivate(1, 1),
-    enabled: role === "admin",
+    enabled: isStaff,
   });
   const adminContacts = useQuery({
     queryKey: ["dashboard", "admin-contacts"],
     queryFn: () => contactService.list({ page: 1, page_size: 1 }),
-    enabled: role === "admin",
+    enabled: isStaff,
   });
   const adminUsers = useQuery({
     queryKey: ["dashboard", "admin-users"],
     queryFn: () => adminUsersService.list({ page: 1, page_size: 1 }),
+    enabled: isStaff,
+  });
+  const adminManagers = useQuery({
+    queryKey: ["dashboard", "admin-managers"],
+    queryFn: () => managerService.list(1, 1),
     enabled: role === "admin",
   });
   const adminRatings = useQuery({
     queryKey: ["dashboard", "admin-ratings"],
     queryFn: () => ratingsService.listForModeration({}, 1, 1),
-    enabled: role === "admin",
+    enabled: isStaff,
   });
   const adminMonthlyBalance = useQuery({
     queryKey: ["dashboard", "admin-monthly-balance"],
     queryFn: () => reportService.getMonthlyBalance(),
-    enabled: role === "admin",
+    enabled: isStaff,
   });
 
   const myServices = useQuery({
@@ -140,24 +148,27 @@ export function DashboardOverviewPage() {
     enabled: role === "client",
   });
 
-  const displayName = me?.client?.first_name ?? me?.employee?.first_name ?? me?.user.email;
+  const displayName = (me?.client ?? me?.employee ?? me?.manager)?.first_name ?? me?.user.email;
 
   return (
     <div>
       <h1 className="text-3xl break-words">Olá, {displayName}!</h1>
       <p className="mt-1 text-bone-500">
-        {role === "admin" && "Aqui está um resumo do seu negócio."}
+        {isStaff && "Aqui está um resumo do seu negócio."}
         {role === "employee" && "Aqui está um resumo da sua agenda e serviços."}
         {role === "client" && "Gerencie seu perfil e seus próximos agendamentos."}
       </p>
 
-      {role === "admin" && (
+      {isStaff && (
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard icon={CalendarCheck} label="Agendamentos" value={adminAppointments.data?.total ?? 0} isLoading={adminAppointments.isLoading} to={ROUTES.dashboardAppointments} />
           <StatCard icon={Scissors} label="Serviços cadastrados" value={adminServices.data?.total ?? 0} isLoading={adminServices.isLoading} to={ROUTES.dashboardServices} />
           <StatCard icon={Package} label="Produtos cadastrados" value={adminProducts.data?.total ?? 0} isLoading={adminProducts.isLoading} to={ROUTES.dashboardProducts} />
           <StatCard icon={MailQuestion} label="Contatos recebidos" value={adminContacts.data?.total ?? 0} isLoading={adminContacts.isLoading} to={ROUTES.dashboardContacts} />
           <StatCard icon={UserCog} label="Usuários cadastrados" value={adminUsers.data?.total ?? 0} isLoading={adminUsers.isLoading} to={ROUTES.dashboardUsers} />
+          {role === "admin" && (
+            <StatCard icon={Briefcase} label="Gerentes" value={adminManagers.data?.total ?? 0} isLoading={adminManagers.isLoading} to={ROUTES.dashboardManagers} />
+          )}
           <StatCard icon={Users} label="Profissionais na equipe" value={adminTeam.data?.total ?? 0} isLoading={adminTeam.isLoading} to={ROUTES.dashboardTeam} />
           <StatCard icon={Star} label="Avaliações" value={adminRatings.data?.total ?? 0} isLoading={adminRatings.isLoading} to={ROUTES.dashboardRatings} />
           <StatCard

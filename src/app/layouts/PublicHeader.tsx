@@ -4,7 +4,6 @@ import { Menu, X, User, LogOut, LayoutDashboard, CalendarClock } from "lucide-re
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { Dropdown, DropdownItem } from "@/components/ui/Dropdown";
-import { NotificationBell } from "@/features/notifications/NotificationBell";
 import { ROUTES } from "@/constants/routes";
 import { useAuth } from "@/app/providers/auth-context";
 import { initials } from "@/utils/format";
@@ -26,7 +25,8 @@ export function PublicHeader() {
   const { isAuthenticated, me, logout } = useAuth();
   const navigate = useNavigate();
 
-  const displayName = me?.client?.first_name ?? me?.employee?.first_name ?? me?.user.email;
+  const profile = me?.client ?? me?.employee ?? me?.manager;
+  const displayName = profile?.first_name ?? me?.user.email;
   const dashboardLabel = me?.user.role === "client" ? "Minha Conta" : "Painel";
 
   async function handleLogout() {
@@ -66,14 +66,13 @@ export function PublicHeader() {
           <Button variant="gold" size="sm" onClick={() => navigate(ROUTES.booking)}>
             <CalendarClock className="h-4 w-4" /> Agendar
           </Button>
-          {isAuthenticated && <NotificationBell />}
           {isAuthenticated ? (
             <Dropdown
               trigger={
                 <Avatar
-                  src={me?.client?.photo_url ?? me?.employee?.photo_url}
+                  src={profile?.photo_url}
                   alt={String(displayName)}
-                  fallback={initials(me?.client?.first_name ?? me?.employee?.first_name, me?.client?.last_name ?? me?.employee?.last_name)}
+                  fallback={initials(profile?.first_name, profile?.last_name)}
                   size="sm"
                 />
               }
@@ -96,17 +95,14 @@ export function PublicHeader() {
           )}
         </div>
 
-        <div className="flex items-center gap-1 lg:hidden">
-          {isAuthenticated && <NotificationBell />}
-          <button
-            className="text-bone-100"
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
-            aria-expanded={mobileOpen}
-          >
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
-        </div>
+        <button
+          className="text-bone-100 lg:hidden"
+          onClick={() => setMobileOpen((v) => !v)}
+          aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
+          aria-expanded={mobileOpen}
+        >
+          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
       </div>
 
       {mobileOpen && (

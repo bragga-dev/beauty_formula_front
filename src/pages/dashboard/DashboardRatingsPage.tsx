@@ -39,7 +39,7 @@ function employeeName(rating: AverageRatingPrivateOut): string {
 
 export function DashboardRatingsPage() {
   const { me } = useAuth();
-  const isAdmin = me?.user.role === "admin";
+  const canModerateAll = me?.user.role === "admin" || me?.user.role === "manager";
   const { push } = useToast();
 
   const [authFilter, setAuthFilter] = useState("all");
@@ -50,7 +50,7 @@ export function DashboardRatingsPage() {
   const filters: AdminRatingFilters = {
     isAuthorized: isAuthorizedFromFilter(authFilter),
     rating: ratingFilter || undefined,
-    employeeId: isAdmin ? employeeId || undefined : undefined,
+    employeeId: canModerateAll ? employeeId || undefined : undefined,
   };
 
   const { data, isLoading, isError, refetch } = useModerationRatings(filters, page);
@@ -103,7 +103,7 @@ export function DashboardRatingsPage() {
 
   const columns: Column<AverageRatingPrivateOut>[] = [
     { header: "Cliente", cell: (r) => <span className="font-medium text-bone-50">{clientName(r)}</span> },
-    ...(isAdmin ? [{ header: "Funcionário", cell: (r: AverageRatingPrivateOut) => employeeName(r), hideOnMobile: true }] : []),
+    ...(canModerateAll ? [{ header: "Funcionário", cell: (r: AverageRatingPrivateOut) => employeeName(r), hideOnMobile: true }] : []),
     { header: "Serviço", cell: (r) => r.service.name, hideOnMobile: true },
     { header: "Nota", cell: (r) => <RatingStars value={r.rating} size="xs" showValue={false} /> },
     {
@@ -136,12 +136,12 @@ export function DashboardRatingsPage() {
               <CheckCircle2 className="h-4 w-4 text-success-500" />
             </Button>
           )}
-          {isAdmin && r.is_authorized && (
+          {canModerateAll && r.is_authorized && (
             <Button variant="ghost" size="icon" aria-label="Revogar" onClick={() => setRevoking(r)}>
               <RotateCcw className="h-4 w-4 text-bone-400" />
             </Button>
           )}
-          {isAdmin && (
+          {canModerateAll && (
             <Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => setDeleting(r)}>
               <Trash2 className="h-4 w-4 text-danger-500" />
             </Button>
@@ -163,7 +163,7 @@ export function DashboardRatingsPage() {
           </Badge>
         }
         meta={[
-          ...(isAdmin ? [{ label: "Funcionário", value: employeeName(r) }] : []),
+          ...(canModerateAll ? [{ label: "Funcionário", value: employeeName(r) }] : []),
           { label: "Nota", value: <RatingStars value={r.rating} size="xs" showValue={false} /> },
           { label: "Comentário", value: r.comment || "—" },
         ]}
@@ -180,12 +180,12 @@ export function DashboardRatingsPage() {
                 <CheckCircle2 className="h-4 w-4 text-success-500" />
               </Button>
             )}
-            {isAdmin && r.is_authorized && (
+            {canModerateAll && r.is_authorized && (
               <Button variant="ghost" size="icon" aria-label="Revogar" onClick={() => setRevoking(r)}>
                 <RotateCcw className="h-4 w-4 text-bone-400" />
               </Button>
             )}
-            {isAdmin && (
+            {canModerateAll && (
               <Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => setDeleting(r)}>
                 <Trash2 className="h-4 w-4 text-danger-500" />
               </Button>
@@ -201,7 +201,7 @@ export function DashboardRatingsPage() {
       <div>
         <h1 className="text-3xl">Avaliações</h1>
         <p className="mt-1 text-bone-500">
-          {isAdmin
+          {canModerateAll
             ? "Autorize ou revogue a publicação de qualquer avaliação recebida."
             : "Autorize a publicação das avaliações que você recebeu dos clientes."}
         </p>
@@ -223,7 +223,7 @@ export function DashboardRatingsPage() {
         ))}
       </div>
 
-      <div className={`mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 ${isAdmin ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}>
+      <div className={`mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 ${canModerateAll ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}>
         <Select
           aria-label="Nota"
           value={ratingFilter}
@@ -237,7 +237,7 @@ export function DashboardRatingsPage() {
           ))}
         </Select>
 
-        {isAdmin && (
+        {canModerateAll && (
           <Select aria-label="Funcionário" value={employeeId} onChange={(e) => updateFilters("employee", e.target.value)}>
             <option value="">Todos os funcionários</option>
             {team?.items.map((e) => (

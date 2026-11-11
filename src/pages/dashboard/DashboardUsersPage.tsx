@@ -15,18 +15,21 @@ import { ErrorState } from "@/components/feedback/ErrorState";
 import { RegisterEmployeeModal } from "@/features/users/RegisterEmployeeModal";
 import { useAdminUsers, useUserMutations } from "@/hooks/useAdminUsers";
 import { useToast } from "@/app/providers/toast-context";
+import { useAuth } from "@/app/providers/auth-context";
 import { formatDate, initials } from "@/utils/format";
 import type { UserAdminOut, UserRole } from "@/types/user";
 import type { ApiError } from "@/types/common";
 
 const ROLE_LABELS: Record<UserRole, string> = {
   admin: "Administrador",
+  manager: "Gerente",
   employee: "Funcionário",
   client: "Cliente",
 };
 
-const ROLE_VARIANT: Record<UserRole, "gold" | "crimson" | "neutral"> = {
+const ROLE_VARIANT: Record<UserRole, "gold" | "crimson" | "neutral" | "info"> = {
   admin: "crimson",
+  manager: "info",
   employee: "gold",
   client: "neutral",
 };
@@ -45,6 +48,15 @@ export function DashboardUsersPage() {
   });
   const { registerEmployee, promoteToEmployee, deactivate, reactivate } = useUserMutations();
   const { push } = useToast();
+  const { me } = useAuth();
+
+  // Espelha as regras do backend: ninguém altera admin nem a própria conta,
+  // e gerente não altera outro gerente.
+  function canToggleStatus(u: UserAdminOut) {
+    if (u.role === "admin" || u.id === me?.user.id) return false;
+    if (me?.user.role === "manager" && u.role === "manager") return false;
+    return true;
+  }
 
   const [registerOpen, setRegisterOpen] = useState(false);
   const [promoting, setPromoting] = useState<UserAdminOut | null>(null);
@@ -121,7 +133,7 @@ export function DashboardUsersPage() {
               <ShieldCheck className="h-4 w-4" />
             </Button>
           )}
-          {u.role !== "admin" && (
+          {canToggleStatus(u) && (
             <Button
               variant="ghost"
               size="icon"
@@ -168,7 +180,7 @@ export function DashboardUsersPage() {
                 <ShieldCheck className="h-4 w-4" />
               </Button>
             )}
-            {u.role !== "admin" && (
+            {canToggleStatus(u) && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -193,7 +205,7 @@ export function DashboardUsersPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl">Usuários</h1>
-          <p className="mt-1 text-bone-500">Clientes, funcionários e administradores da plataforma.</p>
+          <p className="mt-1 text-bone-500">Clientes, funcionários, gerentes e administradores da plataforma.</p>
         </div>
         <Button onClick={() => setRegisterOpen(true)}>
           <Plus className="h-4 w-4" /> Cadastrar funcionário
@@ -219,6 +231,7 @@ export function DashboardUsersPage() {
         >
           <option value="">Todos os usuários</option>
           <option value="admin">Administrador</option>
+          <option value="manager">Gerente</option>
           <option value="employee">Funcionário</option>
           <option value="client">Cliente</option>
         </Select>

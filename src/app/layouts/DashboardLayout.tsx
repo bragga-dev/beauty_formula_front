@@ -6,6 +6,7 @@ import {
   Scissors,
   Users,
   UserCog,
+  Briefcase,
   CalendarClock,
   CalendarOff,
   CalendarCheck,
@@ -22,7 +23,6 @@ import {
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { SkipLink } from "@/components/ui/SkipLink";
-import { NotificationBell } from "@/features/notifications/NotificationBell";
 import { useAuth } from "@/app/providers/auth-context";
 import { ROUTES } from "@/constants/routes";
 import { initials } from "@/utils/format";
@@ -43,13 +43,14 @@ export function DashboardLayout() {
 
   const items: NavItem[] = [{ to: ROUTES.dashboard, label: "Visão Geral", icon: LayoutGrid }];
 
-  if (role === "admin") {
+  if (role === "admin" || role === "manager") {
     items.push(
       { to: ROUTES.dashboardAppointments, label: "Agendamentos", icon: CalendarCheck },
       { to: ROUTES.dashboardServices, label: "Serviços", icon: Scissors },
       { to: ROUTES.dashboardProducts, label: "Produtos", icon: Package },
       { to: ROUTES.dashboardContacts, label: "Contatos", icon: MailQuestion },
       { to: ROUTES.dashboardUsers, label: "Usuários", icon: UserCog },
+      ...(role === "admin" ? [{ to: ROUTES.dashboardManagers, label: "Gerentes", icon: Briefcase }] : []),
       { to: ROUTES.dashboardTeam, label: "Equipe", icon: Users },
       { to: ROUTES.dashboardRatings, label: "Avaliações", icon: Star },
       { to: ROUTES.dashboardPayments, label: "Pagamentos", icon: CreditCard },
@@ -75,7 +76,8 @@ export function DashboardLayout() {
 
   items.push({ to: ROUTES.dashboardProfile, label: "Meu Perfil", icon: User });
 
-  const displayName = me?.client?.first_name ?? me?.employee?.first_name ?? me?.user.email;
+  const profile = me?.client ?? me?.employee ?? me?.manager;
+  const displayName = profile?.first_name ?? me?.user.email;
 
   async function handleLogout() {
     await logout();
@@ -111,9 +113,9 @@ export function DashboardLayout() {
       </nav>
       <div className="mt-auto flex items-center gap-3 rounded-card border border-ink-700 p-3">
         <Avatar
-          src={me?.client?.photo_url ?? me?.employee?.photo_url}
+          src={profile?.photo_url}
           alt={String(displayName)}
-          fallback={initials(me?.client?.first_name ?? me?.employee?.first_name, me?.client?.last_name ?? me?.employee?.last_name)}
+          fallback={initials(profile?.first_name, profile?.last_name)}
           size="sm"
         />
         <div className="min-w-0 flex-1">
@@ -142,12 +144,9 @@ export function DashboardLayout() {
               Fórmula da Beleza
             </span>
           </Link>
-          <div className="flex items-center gap-1">
-            <NotificationBell />
-            <button onClick={() => setMobileOpen(true)} aria-label="Abrir menu">
-              <Menu className="h-6 w-6 text-bone-100" />
-            </button>
-          </div>
+          <button onClick={() => setMobileOpen(true)} aria-label="Abrir menu">
+            <Menu className="h-6 w-6 text-bone-100" />
+          </button>
         </div>
 
         {mobileOpen && (
@@ -165,10 +164,6 @@ export function DashboardLayout() {
             </div>
           </div>
         )}
-
-        <div className="hidden items-center justify-end border-b border-ink-700 bg-ink-900 px-6 py-2.5 lg:flex">
-          <NotificationBell />
-        </div>
 
         <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 p-4 focus:outline-none sm:p-6 lg:p-8">
           <div className="mx-auto w-full min-w-0 max-w-7xl">

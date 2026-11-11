@@ -63,6 +63,9 @@ const DashboardContactsPage = lazy(() =>
 const DashboardUsersPage = lazy(() =>
   import("@/pages/dashboard/DashboardUsersPage").then((m) => ({ default: m.DashboardUsersPage })),
 );
+const DashboardManagersPage = lazy(() =>
+  import("@/pages/dashboard/DashboardManagersPage").then((m) => ({ default: m.DashboardManagersPage })),
+);
 const DashboardTeamPage = lazy(() =>
   import("@/pages/dashboard/DashboardTeamPage").then((m) => ({ default: m.DashboardTeamPage })),
 );
@@ -162,6 +165,12 @@ export function AppRouter() {
 
           <Route element={<ProtectedRoute allow={["admin"]} />}>
             <Route element={<DashboardLayout />}>
+              <Route path={ROUTES.dashboardManagers} element={<DashboardManagersPage />} />
+            </Route>
+          </Route>
+
+          <Route element={<ProtectedRoute allow={["admin", "manager"]} />}>
+            <Route element={<DashboardLayout />}>
               <Route path={ROUTES.dashboardServices} element={<DashboardServicesPage />} />
               <Route path={ROUTES.dashboardProducts} element={<DashboardProductsPage />} />
               <Route path={ROUTES.dashboardContacts} element={<DashboardContactsPage />} />
@@ -197,7 +206,7 @@ export function AppRouter() {
             </Route>
           </Route>
 
-          <Route element={<ProtectedRoute allow={["admin", "employee"]} />}>
+          <Route element={<ProtectedRoute allow={["admin", "manager", "employee"]} />}>
             <Route element={<DashboardLayout />}>
               <Route path={ROUTES.dashboardRatings} element={<DashboardRatingsPage />} />
             </Route>

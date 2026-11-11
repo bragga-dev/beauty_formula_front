@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "client" | "employee";
+export type UserRole = "admin" | "manager" | "client" | "employee";
 
 export interface UserOut {
   id: string;
@@ -50,10 +50,18 @@ export interface EmployeeProfile {
   bio?: string | null;
 }
 
+export interface ManagerProfile {
+  id: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  photo_url?: string | null;
+}
+
 export interface MeOut {
   user: UserOut;
   client?: ClientProfile | null;
   employee?: EmployeeProfile | null;
+  manager?: ManagerProfile | null;
 }
 
 export interface AccessTokenOut {

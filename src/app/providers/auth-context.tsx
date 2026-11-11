@@ -1,8 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { authService } from "@/services/auth.service";
 import { tokenStorage } from "@/utils/token-storage";
-import type { ClientProfile, EmployeeProfile, MeOut } from "@/types/user";
+import type { ClientProfile, EmployeeProfile, ManagerProfile, MeOut } from "@/types/user";
 
 interface AuthContextValue {
   me: MeOut | null;
@@ -14,10 +13,10 @@ interface AuthContextValue {
   logout: () => Promise<void>;
   refreshMe: () => Promise<void>;
   /**
-   * Atualiza `me.client`/`me.employee` localmente com o objeto já retornado
+   * Atualiza `me.client`/`me.employee`/`me.manager` localmente com o objeto já retornado
    * por um endpoint de update/upload, sem disparar um novo GET /auth/me.
    */
-  updateProfile: (profile: ClientProfile | EmployeeProfile) => void;
+  updateProfile: (profile: ClientProfile | EmployeeProfile | ManagerProfile) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -25,7 +24,6 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [me, setMe] = useState<MeOut | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const queryClient = useQueryClient();
 
   const refreshMe = useCallback(async () => {
     try {
@@ -47,35 +45,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshMe().finally(() => setIsLoading(false));
   }, [refreshMe]);
 
-  const login = useCallback(
-    async (email: string, password: string) => {
-      const tokens = await authService.login(email, password);
-      tokenStorage.setAccess(tokens.access);
-      // Limpa qualquer cache do React Query (notificações, agendamentos,
-      // avaliações etc.) de uma sessão anterior — sem isso, trocar de
-      // conta no mesmo navegador (ex.: sair do admin e entrar como
-      // funcionário) mostra por alguns segundos dados em cache do
-      // usuário anterior, já que as queryKeys não são escopadas por
-      // usuário.
-      queryClient.clear();
-      const profile = await authService.me();
-      setMe(profile);
-      return profile;
-    },
-    [queryClient],
-  );
+  const login = useCallback(async (email: string, password: string) => {
+    const tokens = await authService.login(email, password);
+    tokenStorage.setAccess(tokens.access);
+    const profile = await authService.me();
+    setMe(profile);
+    return profile;
+  }, []);
 
-  const loginWithGoogle = useCallback(
-    async (idToken: string) => {
-      const tokens = await authService.loginWithGoogle(idToken);
-      tokenStorage.setAccess(tokens.access);
-      queryClient.clear();
-      const profile = await authService.me();
-      setMe(profile);
-      return profile;
-    },
-    [queryClient],
-  );
+  const loginWithGoogle = useCallback(async (idToken: string) => {
+    const tokens = await authService.loginWithGoogle(idToken);
+    tokenStorage.setAccess(tokens.access);
+    const profile = await authService.me();
+    setMe(profile);
+    return profile;
+  }, []);
 
   const register = useCallback(async (email: string, password: string, password2: string) => {
     // O backend cria o usuário com is_active=False até o e-mail ser confirmado.
@@ -86,11 +70,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authService.register({ email, password, password2 });
   }, []);
 
-  const updateProfile = useCallback((profile: ClientProfile | EmployeeProfile) => {
+  const updateProfile = useCallback((profile: ClientProfile | EmployeeProfile | ManagerProfile) => {
     setMe((prev) => {
       if (!prev) return prev;
       if (prev.user.role === "employee") {
         return { ...prev, employee: profile as EmployeeProfile };
+      }
+      if (prev.user.role === "manager") {
+        return { ...prev, manager: profile as ManagerProfile };
       }
       return { ...prev, client: profile as ClientProfile };
     });
@@ -102,9 +89,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       tokenStorage.clear();
       setMe(null);
-      queryClient.clear();
     }
-  }, [queryClient]);
+  }, []);
 
   return (
     <AuthContext.Provider

@@ -32,6 +32,7 @@ export const PAGE_TITLES: Record<string, string> = {
   [ROUTES.dashboardProducts]: "Produtos — Painel",
   [ROUTES.dashboardContacts]: "Contatos — Painel",
   [ROUTES.dashboardUsers]: "Usuários — Painel",
+  [ROUTES.dashboardManagers]: "Gerentes — Painel",
   [ROUTES.dashboardTeam]: "Equipe — Painel",
   [ROUTES.dashboardAppointments]: "Agendamentos — Painel",
   "/painel/agendamentos/:appointmentId": "Detalhes do Agendamento",
