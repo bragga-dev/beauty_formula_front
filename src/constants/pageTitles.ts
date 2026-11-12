@@ -25,6 +25,7 @@ export const PAGE_TITLES: Record<string, string> = {
   [ROUTES.forgotPassword]: "Recuperar Senha",
   [ROUTES.resetPassword]: "Redefinir Senha",
   [ROUTES.verifyEmail]: "Verificação de E-mail",
+  [ROUTES.copyPassword]: "Copiar Senha",
 
   [ROUTES.dashboard]: "Painel",
   [ROUTES.dashboardProfile]: "Meu Perfil",

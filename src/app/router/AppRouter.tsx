@@ -24,6 +24,9 @@ const ProductsPage = lazy(() => import("@/pages/ProductsPage").then((m) => ({ de
 const ProductDetailPage = lazy(() =>
   import("@/pages/ProductDetailPage").then((m) => ({ default: m.ProductDetailPage })),
 );
+const CopyPasswordPage = lazy(() =>
+  import("@/pages/CopyPasswordPage").then((m) => ({ default: m.CopyPasswordPage })),
+);
 const TeamPage = lazy(() => import("@/pages/TeamPage").then((m) => ({ default: m.TeamPage })));
 const TeamMemberDetailPage = lazy(() =>
   import("@/pages/TeamMemberDetailPage").then((m) => ({ default: m.TeamMemberDetailPage })),
@@ -155,6 +158,7 @@ export function AppRouter() {
           <Route path={ROUTES.resetPassword} element={<ResetPasswordPage />} />
           <Route path={ROUTES.verifyEmail} element={<VerifyEmailPage />} />
           <Route path={ROUTES.emailVerificationRequired} element={<EmailVerificationRequiredPage />} />
+          <Route path={ROUTES.copyPassword} element={<CopyPasswordPage />} />
 
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
